@@ -1,0 +1,26 @@
+{
+  "MONGO_DB_NAME": "le-rule-engine",
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "cors": {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
+      "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization"
+    }
+  },
+  "serviceName": "rule_engine",
+  "mongoUri": "mongodb://localhost:27017/le-rule-engine",
+  "mongoPoolSize": 5,
+  "SWAGGER_BASE_PATH": "/",
+  "timeZone": "+0700",
+  "kafkaBrokers": ["localhost:29092"],
+  "kafkaPartitionsConsumedConcurrently": "3",
+  "redisUri": "redis://127.0.0.1/0",
+  "rundeckUri": "http://direct.ptcapp.net:31700/",
+  "rundeckProjectName": "loyalty",
+  "rundeckAccessToken": "KmFJu0vDKxZLqfu6PvVM6r0BljJuejh3",
+  "hostUrl": "https://loyalty.ptcapp.net:444/api/v1/rule-engine/campaigns",
+  "rundeckCallbackEndpoint": "job",
+  "rewardsValidateUrl":"http://swat-le-reward:8080/rewards/validate"
+}

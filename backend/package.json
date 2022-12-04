@@ -1,0 +1,49 @@
+{
+  "name": "netflix-renting",
+  "version": "1.0.0",
+  "description": "This repo contains netflixRenting project. Nice to meet you!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "postbuild": "node copyFile.js --source=.env --destination=dist/.env",
+    "build": "tsc",
+    "prestart": "node copyFile.js --source=.env.default --destination=.env && npm run build",
+    "start": "node dist/src/server.js",
+    "start:prof": "npm run prestart && clinic bubbleprof -- node dist/src/server.js",
+    "start:flame": "npm run prestart && clinic flame -- node dist/src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lehongduc200115/netflix-renting.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lehongduc200115/netflix-renting/issues"
+  },
+  "homepage": "https://github.com/lehongduc200115/netflix-renting#readme",
+  "dependencies": {
+    "@hapi/hapi": "^20.2.2",
+    "@hapi/joi": "^17.1.1",
+    "@types/hapi": "^18.0.7",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "joi": "^17.6.4",
+    "lodash": "^4.17.21",
+    "mongoose": "^6.7.0",
+    "nodemailer": "^6.8.0",
+    "rimraf": "^3.0.2",
+    "tsc": "^2.0.4",
+    "typescript": "^4.9.3",
+    "winston": "^3.8.2",
+    "yargs": "^17.6.0"
+  },
+  "devDependencies": {
+    "@types/hapi__hapi": "^20.0.13",
+    "@types/lodash": "^4.14.186",
+    "@types/nodemailer": "^6.4.6"
+  }
+}
