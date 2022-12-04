@@ -8,7 +8,7 @@ const getList: ServerRoute = {
   path: `/user`,
   options: {
     description: "Get all users",
-    tags: ["api", "User"],
+    tags: ["api", "user"],
     handler: async (_request: Request, h: ResponseToolkit) => {
       const data = await UserModel.find({});
       return h.response(data).code(HttpStatus.OK);
@@ -21,7 +21,7 @@ const get: ServerRoute = {
   path: `/user/{id}`,
   options: {
     description: "Get user by id",
-    tags: ["api", "User"],
+    tags: ["api", "user"],
     handler: async (request: Request, h: ResponseToolkit) => {
       const data = await UserModel.findById(request.params.id);
       return h
@@ -38,6 +38,7 @@ const login: ServerRoute = {
   path: `/login`,
   options: {
     description: "Post login by email, passwd",
+    tags: ["api", "user"],
     handler: async (request: Request, res: ResponseToolkit) => {
       const { email, password } = request.payload as any;
       const users = await UserModel.findOne({
@@ -59,6 +60,7 @@ const register: ServerRoute = {
   path: `/register`,
   options: {
     description: "Register new user",
+    tags: ["api", "user"],
     handler: async (request: Request, res: ResponseToolkit) => {
       const { email, password, phone } = request.payload as any;
       const users = await UserModel.findOne({ email: email }).exec();
@@ -86,6 +88,7 @@ const verify: ServerRoute = {
   path: `/user/verify`,
   options: {
     description: "Verify user by emailing",
+    tags: ["api", "user"],
     handler: async (request: Request, res: ResponseToolkit) => {
       const { email } = request.query as any;
       const foundUser = await UserModel.findOneAndUpdate(

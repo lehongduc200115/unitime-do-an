@@ -1,11 +1,21 @@
 import { Server } from "@hapi/hapi";
 import config from "./config";
+import * as Hapi from "@hapi/hapi";
+import * as HapiSwagger from "hapi-swagger";
+import Inert from "@hapi/inert";
+import Vision from "@hapi/vision";
 
 import { connectMongo } from "./common/mongoDb";
 // import Swagger from './hapiPlugins/swagger';
 
 import { routes } from "./routes";
 import logger from "./logger";
+
+const swaggerOptions: HapiSwagger.RegisterOptions = {
+  info: {
+    title: "Backend API Documentation",
+  },
+};
 
 const createServer = async () => {
   const server = new Server({
@@ -21,7 +31,21 @@ const createServer = async () => {
     },
   });
 
+  const plugins: Array<Hapi.ServerRegisterPluginObject<any>> = [
+    {
+      plugin: Inert,
+    },
+    {
+      plugin: Vision,
+    },
+    {
+      plugin: HapiSwagger,
+      options: swaggerOptions,
+    },
+  ];
+
   // Register routes
+  await server.register(plugins);
   server.route(routes);
 
   return server;
@@ -51,7 +75,7 @@ export const start = async (module: NodeModule) => {
       })
       .catch((err) => {
         logger.error("Server cannot start", err.stack);
-        console.log(err)
+        console.log(err);
         logger.on("finish", () => {
           process.exit(1);
         });

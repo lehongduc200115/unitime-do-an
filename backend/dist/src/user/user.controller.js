@@ -7,7 +7,7 @@ const getList = {
     path: `/user`,
     options: {
         description: "Get all users",
-        tags: ["api", "User"],
+        tags: ["api", "user"],
         handler: async (_request, h) => {
             const data = await user_model_1.UserModel.find({});
             return h.response(data).code(httpConstant_1.HttpStatus.OK);
@@ -19,7 +19,7 @@ const get = {
     path: `/user/{id}`,
     options: {
         description: "Get user by id",
-        tags: ["api", "User"],
+        tags: ["api", "user"],
         handler: async (request, h) => {
             const data = await user_model_1.UserModel.findById(request.params.id);
             return h
@@ -35,6 +35,7 @@ const login = {
     path: `/login`,
     options: {
         description: "Post login by email, passwd",
+        tags: ["api", "user"],
         handler: async (request, res) => {
             const { email, password } = request.payload;
             const users = await user_model_1.UserModel.findOne({
@@ -54,6 +55,7 @@ const register = {
     path: `/register`,
     options: {
         description: "Register new user",
+        tags: ["api", "user"],
         handler: async (request, res) => {
             const { email, password, phone } = request.payload;
             const users = await user_model_1.UserModel.findOne({ email: email }).exec();
@@ -80,6 +82,7 @@ const verify = {
     path: `/user/verify`,
     options: {
         description: "Verify user by emailing",
+        tags: ["api", "user"],
         handler: async (request, res) => {
             const { email } = request.query;
             const foundUser = await user_model_1.UserModel.findOneAndUpdate({
