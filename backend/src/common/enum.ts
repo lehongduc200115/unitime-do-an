@@ -1,16 +1,21 @@
 export enum SortFieldEnum {
-  STATUS = 'status',
-  CREATED_AT = 'createdAt',
-  UPDATED_AT = 'updatedAt'
+  STATUS = "status",
+  CREATED_AT = "createdAt",
+  UPDATED_AT = "updatedAt",
 }
 
 export enum SortTypeEnum {
-  ASCENDING = 'asc',
-  DESCENDING = 'desc'
+  ASCENDING = "asc",
+  DESCENDING = "desc",
 }
 
 export enum Status {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  DELETE = 'DELETE',
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  DELETE = "DELETE",
+}
+
+export enum ClassType {
+  LAB = "LAB",
+  LEC = "LEC",
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Status = exports.SortTypeEnum = exports.SortFieldEnum = void 0;
+exports.ClassType = exports.Status = exports.SortTypeEnum = exports.SortFieldEnum = void 0;
 var SortFieldEnum;
 (function (SortFieldEnum) {
     SortFieldEnum["STATUS"] = "status";
@@ -18,4 +18,9 @@ var Status;
     Status["INACTIVE"] = "INACTIVE";
     Status["DELETE"] = "DELETE";
 })(Status = exports.Status || (exports.Status = {}));
+var ClassType;
+(function (ClassType) {
+    ClassType["LAB"] = "LAB";
+    ClassType["LEC"] = "LEC";
+})(ClassType = exports.ClassType || (exports.ClassType = {}));
 //# sourceMappingURL=enum.js.map
