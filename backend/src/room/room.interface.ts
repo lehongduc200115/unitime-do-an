@@ -11,5 +11,5 @@ export interface IRoomPayload {
 }
 
 export interface IRoomRequest extends Request {
-  payload: IRoomPayload;
+  payload: IRoomPayload[];
 }

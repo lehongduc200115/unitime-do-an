@@ -13,7 +13,7 @@ exports.getValidator = {
     params: idParamValidator,
 };
 exports.createValidator = {
-    payload: joi_1.default.object({
+    payload: joi_1.default.array().items(joi_1.default.object({
         department: joi_1.default.string(),
         weeklyTimetable: joi_1.default.array().items(joi_1.default.array().items(joi_1.default.boolean())),
         capacity: joi_1.default.number(),
@@ -25,7 +25,7 @@ exports.createValidator = {
             block: joi_1.default.string(),
             level: joi_1.default.number(),
         }),
-    }),
+    })),
 };
 exports.default = {
     getValidator: exports.getValidator,

@@ -42,13 +42,15 @@ const post = {
         tags: ["api", "room"],
         validate: room_validator_1.createValidator,
         handler: async (request, h) => {
-            let timetable = request.payload.weeklyTimetable;
-            timetable = timetable.map((day) => utils_1.utils.fillWith(day, 10, false));
-            const payload = {
-                ...request.payload,
-                weeklyTimetable: utils_1.utils.fillWith(timetable, 7, utils_1.utils.fillWith(Array(), 10, false)),
-            };
-            const data = await room_model_1.RoomModel.create(payload);
+            let timetable = request.payload.map((it) => it.weeklyTimetable);
+            timetable = timetable.map((it) => it.map((day) => utils_1.utils.fillWith(day, 10, false)));
+            const payload = request.payload.map((it, index) => {
+                return {
+                    ...it,
+                    weeklyTimetable: utils_1.utils.fillWith(timetable[index], 7, utils_1.utils.fillWith(Array(), 10, false)),
+                };
+            });
+            const data = await room_model_1.RoomModel.insertMany(payload);
             return h
                 .response({
                 data: data,

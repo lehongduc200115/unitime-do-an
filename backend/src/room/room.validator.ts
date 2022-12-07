@@ -11,19 +11,21 @@ export const getValidator: RouteOptionsValidate = {
 };
 
 export const createValidator: RouteOptionsValidate = {
-  payload: Joi.object({
-    department: Joi.string(),
-    weeklyTimetable: Joi.array().items(Joi.array().items(Joi.boolean())),
-    capacity: Joi.number(),
-    classType: Joi.string()
-      .valid(...Object.values(ClassType))
-      .default(ClassType.LEC),
-    coordinate: Joi.object({
-      zone: Joi.string().valid("TD", "Q10"),
-      block: Joi.string(),
-      level: Joi.number(),
-    }),
-  }),
+  payload: Joi.array().items(
+    Joi.object({
+      department: Joi.string(),
+      weeklyTimetable: Joi.array().items(Joi.array().items(Joi.boolean())),
+      capacity: Joi.number(),
+      classType: Joi.string()
+        .valid(...Object.values(ClassType))
+        .default(ClassType.LEC),
+      coordinate: Joi.object({
+        zone: Joi.string().valid("TD", "Q10"),
+        block: Joi.string(),
+        level: Joi.number(),
+      }),
+    })
+  ),
 };
 
 export default {

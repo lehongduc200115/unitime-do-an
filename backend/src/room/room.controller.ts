@@ -46,19 +46,24 @@ const post: ServerRoute = {
     tags: ["api", "room"],
     validate: createValidator,
     handler: async (request: IRoomRequest, h: ResponseToolkit) => {
-      let timetable = request.payload.weeklyTimetable;
-      timetable = timetable.map((day) =>
-        utils.fillWith(day, 10, false)
-      ) as any as [IDailyTimetable];
-      const payload = {
-        ...request.payload,
-        weeklyTimetable: utils.fillWith(
-          timetable,
-          7,
-          utils.fillWith(Array(), 10, false)
-        ),
-      };
-      const data = await RoomModel.create(payload);
+      let timetable = request.payload.map((it) => it.weeklyTimetable);
+      timetable = timetable.map(
+        (it) =>
+          it.map((day) => utils.fillWith(day, 10, false)) as any as [
+            IDailyTimetable
+          ]
+      );
+      const payload = request.payload.map((it, index) => {
+        return {
+          ...it,
+          weeklyTimetable: utils.fillWith(
+            timetable[index],
+            7,
+            utils.fillWith(Array(), 10, false)
+          ),
+        };
+      });
+      const data = await RoomModel.insertMany(payload);
       return h
         .response({
           data: data,
