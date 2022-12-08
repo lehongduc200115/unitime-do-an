@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {login} from './login/Login';
+import {login} from './pages/Login';
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const AuthContext = React.createContext(null);
