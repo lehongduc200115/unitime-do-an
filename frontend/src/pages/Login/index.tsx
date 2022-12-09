@@ -12,7 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useAuth } from '../App';
+// import { useAuth } from '../App';
 
 import axios from 'axios';
 
@@ -45,7 +45,7 @@ export async function login(email: string, password: string) {
 const theme = createTheme();
 export default function SignIn({ setUser }: any) {
   // const [isLoggedIn, setIsLoggedIn] = React.useState(true);
-  const { onLogin } = useAuth();
+  // const { onLogin } = useAuth();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,7 +61,7 @@ export default function SignIn({ setUser }: any) {
     //   console.log(JSON.stringify(data.data))
     //   setUser(data.data.email)
     // });
-    onLogin(data.get('email'), data.get('password'))
+    // onLogin(data.get('email'), data.get('password'))
   };
 
   return (
