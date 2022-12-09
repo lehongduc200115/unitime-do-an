@@ -18,4 +18,5 @@ export enum Status {
 export enum ClassType {
   LAB = "LAB",
   LEC = "LEC",
+  ALL = "ALL",
 }

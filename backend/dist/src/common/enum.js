@@ -22,5 +22,6 @@ var ClassType;
 (function (ClassType) {
     ClassType["LAB"] = "LAB";
     ClassType["LEC"] = "LEC";
+    ClassType["ALL"] = "ALL";
 })(ClassType = exports.ClassType || (exports.ClassType = {}));
 //# sourceMappingURL=enum.js.map

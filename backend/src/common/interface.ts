@@ -6,3 +6,15 @@ interface ICoordinate {
   block: string;
   level: number;
 }
+
+interface ICriteriaDetail<T> {
+  isActive: boolean;
+  condition: T;
+}
+
+interface IStudentTimeCriteria {
+  weeklyTime: [];
+}
+interface ICriteria {
+  studentTime?: ICriteriaDetail<IStudentTimeCriteria>;
+}
