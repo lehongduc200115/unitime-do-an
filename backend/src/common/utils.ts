@@ -22,8 +22,8 @@ const mergeDailyTime = (weekTimes: [[IDailyTimetable]]): IDailyTimetable[] => {
 };
 
 const extractCalendarByCriteria = (
-  weeklyTimetable: IDailyTimetable[],
-  criteria: ICriteria
+  _weeklyTimetable: IDailyTimetable[],
+  _criteria: ICriteria
 ) => {};
 
 export const utils = {
