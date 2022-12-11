@@ -13,6 +13,7 @@ import {
   Student,
   Subject,
 } from '@pages';
+import Test from 'src/pages/test/Test';
 
 
 const Router = () => {
@@ -26,6 +27,7 @@ const Router = () => {
         <Route path='/student' element={< Student />} />
         <Route path='/subject' element={< Subject />} />
         <Route path='/login' element={< Login />} />
+        <Route path='/test' element={< Test />} />
       </Routes>
     </BrowserRouter>
   )

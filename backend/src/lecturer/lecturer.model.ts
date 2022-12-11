@@ -6,7 +6,6 @@ export interface ILecturer {
   department: string;
   weeklyTimetable: [IDailyTimetable];
   status?: Status;
-  capacity: number;
   classType: ClassType;
   createdBy?: string;
   updatedBy?: string;
