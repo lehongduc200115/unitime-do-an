@@ -1,13 +1,16 @@
 export const excelSchemaMapping: Record<string, any> = {
   lecturer: {
+    ID: "id",
     NAME: "name",
     WEEKLY_TIME_TALBLE: "weeklyTimetable",
     CLASS_TYPE: "classType",
     DEPARTMENT: "department",
   },
   room: {
+    ID: "id",
     DEPARTMENT: "department",
     WEEKLY_TIME_TALBLE: "weeklyTimetable",
+    CAPACITY: "capacity",
     CLASS_TYPE: "classType",
     COORDINATE: {
       coordinate: {
@@ -18,6 +21,8 @@ export const excelSchemaMapping: Record<string, any> = {
     },
   },
   subject: {
+    ID: "id",
+    NAME: "name",
     DEPARTMENT: "department",
     CLASS_TYPE: "classType",
     HOUR: {

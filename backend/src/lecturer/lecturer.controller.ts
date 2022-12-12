@@ -49,7 +49,7 @@ const post: ServerRoute = {
       let timetable = request.payload.map((it) => it.weeklyTimetable);
       timetable = timetable.map(
         (it) =>
-          it.map((day) => utils.fillWith(day, 10, false)) as any as [
+          it.map((day) => utils.fillWith(day, 11, false)) as any as [
             IDailyTimetable
           ]
       );
@@ -58,8 +58,8 @@ const post: ServerRoute = {
           ...it,
           weeklyTimetable: utils.fillWith(
             timetable[index],
-            7,
-            utils.fillWith(Array(), 10, false)
+            5,
+            utils.fillWith(Array(), 11, false)
           ),
         };
       });

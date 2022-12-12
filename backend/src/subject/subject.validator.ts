@@ -16,7 +16,10 @@ export const createValidator: RouteOptionsValidate = {
       id: Joi.string(),
       name: Joi.string(),
       department: Joi.string(),
-      weeklyTimetable: Joi.array().items(Joi.array().items(Joi.boolean())),
+      hour: Joi.object({
+        lab: Joi.number(),
+        lec: Joi.number(),
+      }),
       classType: Joi.string()
         .valid(...Object.values(ClassType))
         .default(ClassType.ALL),

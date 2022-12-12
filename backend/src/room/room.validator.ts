@@ -13,6 +13,7 @@ export const getValidator: RouteOptionsValidate = {
 export const createValidator: RouteOptionsValidate = {
   payload: Joi.array().items(
     Joi.object({
+      id: Joi.string(),
       department: Joi.string(),
       weeklyTimetable: Joi.array().items(Joi.array().items(Joi.boolean())),
       capacity: Joi.number(),

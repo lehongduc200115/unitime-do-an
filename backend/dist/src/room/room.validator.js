@@ -14,6 +14,7 @@ exports.getValidator = {
 };
 exports.createValidator = {
     payload: joi_1.default.array().items(joi_1.default.object({
+        id: joi_1.default.string(),
         department: joi_1.default.string(),
         weeklyTimetable: joi_1.default.array().items(joi_1.default.array().items(joi_1.default.boolean())),
         capacity: joi_1.default.number(),

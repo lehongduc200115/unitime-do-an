@@ -43,11 +43,11 @@ const post = {
         validate: room_validator_1.createValidator,
         handler: async (request, h) => {
             let timetable = request.payload.map((it) => it.weeklyTimetable);
-            timetable = timetable.map((it) => it.map((day) => utils_1.utils.fillWith(day, 10, false)));
+            timetable = timetable.map((it) => it.map((day) => utils_1.utils.fillWith(day, 11, false)));
             const payload = request.payload.map((it, index) => {
                 return {
                     ...it,
-                    weeklyTimetable: utils_1.utils.fillWith(timetable[index], 7, utils_1.utils.fillWith(Array(), 10, false)),
+                    weeklyTimetable: utils_1.utils.fillWith(timetable[index], 5, utils_1.utils.fillWith(Array(), 11, false)),
                 };
             });
             const data = await room_model_1.RoomModel.insertMany(payload);
