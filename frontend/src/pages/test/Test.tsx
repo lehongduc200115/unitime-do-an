@@ -1,12 +1,11 @@
 import * as React from 'react';
 import helpers from 'src/helpers/helpers';
-import mapping from '../../helpers/xlsx/mapping';
 import { IReaderResult } from '../../helpers/helpers';
 
 export default function Test() {
   async function handleOnChange(e: any) {
     const res = await helpers.xlsxToJson(e.target.files[0], {
-      map: mapping.subject
+      "isTimetableEmbedded": true
     })
     setResult(res);
   }

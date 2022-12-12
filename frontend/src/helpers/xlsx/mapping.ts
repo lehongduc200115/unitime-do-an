@@ -1,4 +1,4 @@
-export default {
+export const excelSchemaMapping: Record<string, any> = {
   lecturer: {
     NAME: "name",
     WEEKLY_TIME_TALBLE: "weeklyTimetable",
@@ -27,4 +27,19 @@ export default {
       },
     },
   },
+  roomTimetable: {
+    ROOM_ID: "roomId",
+    WEEKDAY: "weekday",
+    PERIOD: "period",
+  },
+  lecturerTimetable: {
+    LECTURER_ID: "lecturerId",
+    WEEKDAY: "weekday",
+    PERIOD: "period",
+  },
+};
+
+export const timetableMapping: Record<string, any> = {
+  room: { table: "Room Timetable", refId: "roomId" },
+  lecturer: { table: "Lecturer Timetable", refId: "lecturerId" },
 };
