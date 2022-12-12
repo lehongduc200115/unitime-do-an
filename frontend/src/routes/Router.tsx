@@ -9,6 +9,7 @@ import {
   Home,
   Instructor,
   Login,
+  Register,
   Room,
   Student,
   Subject,
@@ -28,6 +29,7 @@ const Router = () => {
         <Route path='/subject' element={< Subject />} />
         <Route path='/login' element={< Login />} />
         <Route path='/test' element={< Test />} />
+        <Route path='/register' element={< Register />} />
       </Routes>
     </BrowserRouter>
   )
