@@ -224,7 +224,7 @@ const ImportData = () => {
         <AccordionDetails>
           <Box textAlign='center'>
             <Typography variant='body1' sx={styles.textDetail}>
-              Upload 1 detail file and 1 utilized time file. Supported CSV files only.
+              Upload 1 detail file and 1 utilized time file. Support CSV files only.
             </Typography>
             <ButtonGroup
               sx={styles.uploadButton}
