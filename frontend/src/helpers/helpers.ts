@@ -94,15 +94,12 @@ async function getSheetNames(file: File) {
 function parseTimetableToBooleans(rows: any[], sheet: string) {
   const associatedObject: Record<string, any> = {};
   rows.forEach((row) => {
-    const associatedKey = row[excelSchemaMapping[getMappingName(sheet)].refId];
+    const associatedKey = row[timetableMapping[getMappingName(sheet)].refId];
     if (!associatedObject[associatedKey]) {
       associatedObject[associatedKey] = Array.apply(null, Array(5)).map((it) =>
         JSON.parse(
           JSON.stringify(Array.apply(null, Array(11)).map((it) => false))
         )
-      );
-      console.log(
-        `associatedObject[associatedKey]: ${associatedObject[associatedKey]}`
       );
     }
 

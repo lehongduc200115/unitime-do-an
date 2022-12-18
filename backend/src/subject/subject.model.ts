@@ -1,32 +1,30 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
+import { IClassHour } from "./subject.interface";
 
-export interface IRoom {
+export interface ISubject {
   id: string;
+  name: string;
   department: string;
-  weeklyTimetable: [IDailyTimetable];
   status?: Status;
-  capacity: number;
+  hour?: IClassHour;
   classType: ClassType;
-  coordinate: ICoordinate;
   createdBy?: string;
   updatedBy?: string;
 }
-export type RoomDocument = IRoom & Document;
+export type SubjectDocument = ISubject & Document;
 
-const roomSchema: Schema<RoomDocument> = new Schema(
+const subjectSchema: Schema<SubjectDocument> = new Schema(
   {
     id: {
       type: String,
-      unique: true,
       required: true,
+    },
+    name: {
+      type: String,
     },
     department: {
       type: String,
-      required: true,
-    },
-    weeklyTimetable: {
-      type: [Array],
       required: true,
     },
     status: {
@@ -34,16 +32,12 @@ const roomSchema: Schema<RoomDocument> = new Schema(
       default: Status.ACTIVE,
       index: true,
     },
-    capacity: {
-      type: Number,
-      default: -1,
+    hour: {
+      type: Object,
     },
     classType: {
       type: String,
-      default: ClassType.LEC,
-    },
-    coordinate: {
-      type: Object,
+      default: ClassType.ALL,
     },
     createdBy: {
       type: String,
@@ -58,11 +52,11 @@ const roomSchema: Schema<RoomDocument> = new Schema(
   }
 );
 
-roomSchema.set("toObject", {
+subjectSchema.set("toObject", {
   virtuals: true,
 });
 
-export const RoomModel: Model<RoomDocument> = mongoose.model(
-  "room",
-  roomSchema
+export const SubjectModel: Model<SubjectDocument> = mongoose.model(
+  "subject",
+  subjectSchema
 );

@@ -27,11 +27,11 @@ exports.RoomModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const enum_1 = require("../common/enum");
 const roomSchema = new mongoose_1.Schema({
-    // id: {
-    //   type: String,
-    //   required: true,
-    //   unique: true,
-    // },
+    id: {
+        type: String,
+        unique: true,
+        required: true,
+    },
     department: {
         type: String,
         required: true,

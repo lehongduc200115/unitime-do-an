@@ -2,6 +2,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
 
 export interface ILecturer {
+  id: string;
   name: string;
   department: string;
   weeklyTimetable: [IDailyTimetable];
@@ -14,6 +15,11 @@ export type LecturerDocument = ILecturer & Document;
 
 const lecturerSchema: Schema<LecturerDocument> = new Schema(
   {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: true,
