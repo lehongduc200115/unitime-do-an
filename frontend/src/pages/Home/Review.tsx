@@ -52,7 +52,7 @@ const MetadataField = () => {
                         <MenuItem value={20}>102B1</MenuItem>
                         <MenuItem value={30}>102B1</MenuItem>
                     </Select>
-                    <FormHelperText>Find Room by Id, use dropdown above to search for room</FormHelperText>
+                    <FormHelperText>With label + helper text</FormHelperText>
                 </FormControl>
             </Grid>
 

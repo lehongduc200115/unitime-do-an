@@ -28,36 +28,48 @@ const permutator = (subjectIds: string[]) => {
   return result;
 };
 
-const parseDailyTimetableWithIds = (
-  tbl: IDailyTimetable[]
-): IDailyTimetableWithIds[] => {
-  return tbl.map((day) => {
-    return day.map((hour) => (hour ? (Array(0) as string[]) : hour));
-  });
-};
+// const parseDailyTimetableWithIds = (
+//   tbl: IDailyTimetable[]
+// ): IDailyTimetableWithIds[] => {
+//   return tbl.map((day) => {
+//     return day.map((hour) => (hour ? (Array(0) as string) : hour));
+//   });
+// };
 
-const timetableManipulation = (
-  method: String,
-  tbl1: IDailyTimetableWithIds[],
-  _tbl2: IDailyTimetableWithIds[]
-) => {
-  const array11False = Array.apply(null, Array(11)).map((_it) => false);
-  const result: IDailyTimetable[] = Array.apply(null, Array(5)).map((_it) =>
-    JSON.parse(JSON.stringify(array11False))
-  );
-  if (method == "AND") {
-    tbl1.forEach((dailyTime, dayIdx) => {
-      dailyTime.map((hour, hourIdx) => {
-        // result[dayIdx][hourIdx] = hour && tbl2[dayIdx][hourIdx];
-      });
-    });
-  } else if (method == "OR") {
-    tbl1.forEach((dailyTime, dayIdx) => {
-      dailyTime.map((hour, hourIdx) => {
-        // result[dayIdx][hourIdx] = hour || tbl2[dayIdx][hourIdx];
-      });
-    });
-  }
+// const timetableManipulation = (
+//   method: String,
+//   tbl1: IDailyTimetableWithIds[],
+//   _tbl2: IDailyTimetableWithIds[]
+// ) => {
+//   const array11False = Array.apply(null, Array(11)).map((_it) => false);
+//   const result: IDailyTimetable[] = Array.apply(null, Array(5)).map((_it) =>
+//     JSON.parse(JSON.stringify(array11False))
+//   );
+//   if (method == "AND") {
+//     tbl1.forEach((dailyTime, _dayIdx) => {
+//       dailyTime.map(_hour, _hourIdx) => {
+//         // result[dayIdx][hourIdx] = hour && tbl2[dayIdx][hourIdx];
+//       });
+//     });
+//   } else if (method == "OR") {
+//     tbl1.forEach((dailyTime, dayIdx) => {
+//       dailyTime.map((hour, hourIdx) => {
+//         // result[dayIdx][hourIdx] = hour || tbl2[dayIdx][hourIdx];
+//       });
+//     });
+//   }
 
-  return result;
+//   return result;
+// };
+
+const performGaTimetable = (
+  classTTble: IDailyTimetable[],
+  roomTTble: IDailyTimetable[],
+  lecturerTTbl: IDailyTimetable[]
+): IDailyTimetable[] => {
+  // perform Ga
+  return [
+    [true, true, false],
+    [false, false],
+  ];
 };
