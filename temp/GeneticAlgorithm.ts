@@ -43,12 +43,13 @@ interface Configuration {
     geneCount?: number,
     generation?: number,
     mutationRate?: number,
-    populationSize?: number,
-    fitness: ((entity: Entity) => number),
-    selection: ((population: Entity[]) => Entity[]) | undefined,
-    dump?: ((population: Entity[]) => void) | undefined,
+    maxPopulationSize?: number,
+    fitness?: ((entity: Entity) => number),
+    crossover?: ((first: Entity, second: Entity) => Entity[]),
+    selection?: ((population: Entity[]) => Entity[]),
 
-    eliteRate?: number
+    eliteRate?: number,
+    initialPopulation?: Entity[],
 }
 
 
@@ -59,14 +60,14 @@ export class GeneticAlgorithm {
     geneCount: number;
     generation: number;
     mutationRate: number;
-    populationSize: number;
+    maxPopulationSize: number;
     population: Entity[] = [];
     fitness: ((entity: Entity) => number);
     customSelectParents: ((population: Entity[]) => Entity[]) | undefined;
     customCrossover: ((first: Entity, second: Entity) => Entity[]) | undefined;
-    customDump: ((population: Entity[]) => void) | undefined;
     
     // Extended attributes
+    earlyStop: ((population: Entity[]) => boolean) | undefined;
     eliteRate: number;
     notableEntities: Entity[] = [];
 
@@ -82,42 +83,46 @@ export class GeneticAlgorithm {
      *      - Algorithm may be stopped beforehand by other conditions
      *      - Optional work?: 0 generation for other stopping condition
      * @param {number} [mutationRate] - Chance for a gene mutate. A number from 0 to 1
-     * @param {number} [populationSize] - Number of entities in population
-     * @param {(population: Entity[]) => Entity[] | undefined} selection - Fitness evaluation function
+     * @param {number} [maxPopulationSize] - Maximum number of entities to be sustained in population
+     * @param {(population: Entity[]) => Entity[]} selection - Custom parents selection function
+     *      - Return an array of Entity object represent as parents
+     * @param {(first: Entity, second: Entity) => Entity[]} crossover - Custom crossover function
+     *      - Return 2 Entity object as array
+     * @param {(entity: Entity) => number} fitness - Fitness evaluation function
      *      - Return fitness score
      *      - Higher score means better fitness
-     * @param {(entity: Entity) => number | undefined} fitness - Fitness evaluation function
-     *      - Return fitness score
-     *      - Higher score means better fitness
-     * @param {(population: Entity[]) => void | undefined} [dump] - Do anything at the end of the run
+     * @param {(population: Entity[]) => boolean} [earlyStop] - Stop the algorithm when current population satisfies conditions.
      * @param {number} [eliteRate] - Proportion of population to continue live on
      *      - Relative to population after reproduction
      *      - A number from 0 to 1
+     * @param {Entity[]} [initialPopulation] - Population to start with
      */
     public configurate = ({
         chromosomeLength = this.chromosomeLength,
         geneCount = this.geneCount,
         generation = this.generation || 50,
         mutationRate = this.mutationRate || 0.01,
-        populationSize = this.populationSize || 50,
+        maxPopulationSize = this.maxPopulationSize || 50,
         fitness = this.fitness,
         selection = this.customSelectParents,
-        dump = this.customDump,
+        crossover = this.customCrossover,
         eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate
     }: Configuration) => {
         this.chromosomeLength = chromosomeLength;
         this.geneCount = geneCount;
         this.generation = generation;
         this.mutationRate = mutationRate;
-        this.populationSize = populationSize;
+        this.maxPopulationSize = maxPopulationSize;
         this.fitness = fitness;
         this.customSelectParents = selection;
-        this.customDump = dump;
+        this.customCrossover = crossover;
         this.eliteRate = eliteRate;
     }
 
     /**
      * Run the algorithm with configurations set
+     * 
+     * @returns The final population
      */
     public run = () => {
         // Generate population
@@ -130,10 +135,11 @@ export class GeneticAlgorithm {
             console.log('\rGeneration', this.generation - loop);
             // Calculate fitness of the population
             // Early stopping condition satisfied?
-            // TODO
+            if (this.earlyStop?.(this.population)) {
+                break;
+            }
             // Selection
             const parentPool = this.selectParents();
-            const parentPoolLength = parentPool.length;
             // Crossover (breeding) with mutation
             this.crossoverSelection(parentPool);
             // Control population size
@@ -142,27 +148,14 @@ export class GeneticAlgorithm {
             this.calculateFitness();
         }
         
-        this.dump();
-    }
-
-    /**
-     * Do anything to the final population
-     */
-    private dump = () => {
-        if (this.customDump) {
-            this.customDump(this.population);
-        } else {
-            this.population.forEach((entity: Entity) => {
-                console.log(entity.chromosome, '-', entity.fitness);
-            });
-        }
+        return this.population;
     }
 
     /**
      * Generate population or emigrate to sustain population size
      */
     private spawnPopulation = () => {
-        for (let i = this.population.length; i < this.populationSize; ++i) {
+        for (let i = this.population.length; i < this.maxPopulationSize; ++i) {
             this.population.push(
                 new Entity(
                     this.chromosomeLength,
@@ -183,36 +176,38 @@ export class GeneticAlgorithm {
     }
     
     /**
-     * Determines which entity should take part in crossover process. A default function is used if {@link customSelection} is undefined
+     * Determines which entity should take part in crossover process.
+     * A default K-way tournament selection is used if {@link customSelection} is undefined
      * 
      * @returns An array of even number of entities
      */
     private selectParents = () => {
+        // Using custom method
         if (this.customSelectParents) {
             return this.customSelectParents(this.population);
-        } else { // Using default selection function
-            const crossoverRate = 0.3;
-            let parentPoolSize = Math.floor(this.population.length * crossoverRate);
-            let temp = [...this.population].sort((a: Entity, b: Entity) => {
-                return b.fitness - a.fitness // Descending fitness score
-            });
-            let result: Entity[] = [];
-            // K-way tournament
-            // Calculate sample space
-            let maxProb = temp[0].fitness + 1;
-            maxProb = maxProb * (maxProb + 1) / 2;
-            // Pick up entities until enough size reached
-            let i = 0;
-            while (parentPoolSize) {
-                if (Math.random() < (temp[i].fitness + 1) / maxProb) { // The division represents chance to be picked up
-                    result.push(temp[i]);
-                    parentPoolSize--;
-                    temp.splice(i, 1); // Remove picked entity from list
-                }
-                i = (i + 1) % temp.length;
-            }
-            return result;
         }
+        // Or using default one
+        const crossoverRate = 0.5;
+        let parentPoolSize = Math.floor(this.population.length * crossoverRate);
+        let temp = [...this.population].sort((a: Entity, b: Entity) => {
+            return b.fitness - a.fitness // Descending fitness score
+        });
+        let result: Entity[] = [];
+        // K-way tournament
+        // Calculate sample space
+        let maxProb = temp[0].fitness + 1;
+        maxProb = maxProb * (maxProb + 1) / 2;
+        // Pick up entities until enough size reached
+        let i = 0;
+        while (parentPoolSize) {
+            if (Math.random() < (temp[i].fitness + 1) / maxProb) { // The division represents chance to be picked up
+                result.push(temp[i]);
+                parentPoolSize--;
+                temp.splice(i, 1); // Remove picked entity from list
+            }
+            i = (i + 1) % temp.length;
+        }
+        return result;
     }
     
     /**
@@ -231,7 +226,8 @@ export class GeneticAlgorithm {
     }
 
     /**
-     * Reproduce new entities from 2 entities using single-point crossover, including mutation. A default function is used if {@link customSelection} is undefined
+     * Reproduce new entities from 2 entities using single-point crossover, including mutation.
+     * A default single-point crossover is used if {@link customSelection} is undefined
      * 
      * @param first - First entity
      * @param second - Second entity
@@ -241,9 +237,9 @@ export class GeneticAlgorithm {
     private crossover = (first: Entity, second: Entity) => {
         let firstChild: any;
         let secondChild: any;
-        if (this.customCrossover) {
+        if (this.customCrossover) { // Using custom method
             [firstChild, secondChild] = this.customCrossover(first, second);
-        } else {
+        } else { // Or using default one
             const length = this.chromosomeLength;
             let crossPoint = randInt(1, length) // At least 1 gene should be able to crossover
     
@@ -270,7 +266,7 @@ export class GeneticAlgorithm {
         this.population.sort((a: Entity, b: Entity) => {
             return Math.round(b.fitness - a.fitness) // Descending fitness score
         });
-        const eliteCount = Math.floor(this.populationSize * this.eliteRate);
+        const eliteCount = Math.floor(this.maxPopulationSize * this.eliteRate);
         this.population.splice(eliteCount);
     }
 }
