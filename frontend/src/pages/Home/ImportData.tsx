@@ -172,42 +172,6 @@ const ImportData = () => {
 
   return (
     <>
-      {/* Add via form */}
-      <Accordion
-        expanded={expanded === 'panel1'}
-        onChange={handleAccordionExpand('panel1')}
-        disableGutters
-        elevation={3}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          sx={styles.customAccordion}
-        >
-          <Typography variant="h6">
-            Add manually
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box component="form">
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Location
-                </Typography>
-              </Grid>
-              <MetadataField />
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Utilized timetable
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <UtilizedTimetable />
-              </Grid>
-            </Grid>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
 
       {/* File uploading */}
       <Accordion
@@ -248,29 +212,6 @@ const ImportData = () => {
                 />
               </Button>
             </ButtonGroup>
-            <Container disableGutters maxWidth="xs" sx={styles.textBoxChosenFile}>
-              <Typography variant='body1' sx={[styles.textDetail, styles.textChosenFile]}>
-                <Typography component='span'>
-                  {'Chosen file detail: '}
-                </Typography>
-                {fileDetail?.name}
-              </Typography>
-              <Typography variant='body1' sx={[styles.textDetail, styles.textChosenFile]}>
-                <Typography component='span'>
-                  {'Uploaded at: '}
-                </Typography>
-                {fileTime?.name}
-              </Typography>
-            </Container>
-            <Button
-              sx={styles.uploadButton}
-              startIcon={<UploadFileIcon />}
-              variant='contained'
-              // disabled={!fileDetail || !fileTime}
-              onClick={handleUploadFile}
-            >
-              Upload
-            </Button>
           </Box>
         </AccordionDetails>
       </Accordion>

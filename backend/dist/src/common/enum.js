@@ -20,8 +20,8 @@ var Status;
 })(Status = exports.Status || (exports.Status = {}));
 var ClassType;
 (function (ClassType) {
-    ClassType["LAB"] = "LAB";
-    ClassType["LEC"] = "LEC";
-    ClassType["ALL"] = "ALL";
+    ClassType["LAB"] = "lab";
+    ClassType["LEC"] = "lec";
+    ClassType["ALL"] = "all";
 })(ClassType = exports.ClassType || (exports.ClassType = {}));
 //# sourceMappingURL=enum.js.map
