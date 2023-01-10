@@ -61,12 +61,13 @@ class GeneticAlgorithm {
          *      - A number from 0 to 1
          * @param {Entity[]} [initialPopulation] - Population to start with
          */
-        this.configurate = ({ chromosomeLength = this.chromosomeLength, geneCount = this.geneCount, generation = this.generation || 50, mutationRate = this.mutationRate || 0.01, maxPopulationSize = this.maxPopulationSize || 50, fitness = this.fitness, selection = this.customSelectParents, crossover = this.customCrossover, eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate }) => {
+        this.configurate = ({ chromosomeLength = this.chromosomeLength, geneCount = this.geneCount, generation = this.generation || 50, mutationRate = this.mutationRate || 0.01, maxPopulationSize = this.maxPopulationSize || 50, fitness = this.fitness, selection = this.customSelectParents, crossover = this.customCrossover, eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate, initialPopulation = [] }) => {
             this.chromosomeLength = chromosomeLength;
             this.geneCount = geneCount;
             this.generation = generation;
             this.mutationRate = mutationRate;
             this.maxPopulationSize = maxPopulationSize;
+            this.population = initialPopulation;
             this.fitness = fitness;
             this.customSelectParents = selection;
             this.customCrossover = crossover;
@@ -96,6 +97,7 @@ class GeneticAlgorithm {
                 const parentPool = this.selectParents();
                 // Crossover (breeding) with mutation
                 this.crossoverSelection(parentPool);
+                this.calculateFitness();
                 // Control population size
                 this.purgePopulation();
                 this.spawnPopulation();
@@ -140,8 +142,10 @@ class GeneticAlgorithm {
             let result = [];
             // K-way tournament
             // Calculate sample space
-            let maxProb = temp[0].fitness + 1;
-            maxProb = maxProb * (maxProb + 1) / 2;
+            let maxProb = 0;
+            this.population.forEach((entity) => {
+                maxProb += entity.fitness + 1; // Padding 1 unit since there is 0 score.
+            });
             // Pick up entities until enough size reached
             let i = 0;
             while (parentPoolSize) {
@@ -149,6 +153,8 @@ class GeneticAlgorithm {
                     result.push(temp[i]);
                     parentPoolSize--;
                     temp.splice(i, 1); // Remove picked entity from list
+                    i = i % temp.length;
+                    continue;
                 }
                 i = (i + 1) % temp.length;
             }
@@ -202,7 +208,7 @@ class GeneticAlgorithm {
          */
         this.purgePopulation = () => {
             this.population.sort((a, b) => {
-                return Math.round(b.fitness - a.fitness); // Descending fitness score
+                return b.fitness - a.fitness; // Descending fitness score
             });
             const eliteCount = Math.floor(this.maxPopulationSize * this.eliteRate);
             this.population.splice(eliteCount);

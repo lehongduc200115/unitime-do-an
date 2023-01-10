@@ -106,13 +106,15 @@ export class GeneticAlgorithm {
         fitness = this.fitness,
         selection = this.customSelectParents,
         crossover = this.customCrossover,
-        eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate
+        eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate,
+        initialPopulation = []
     }: Configuration) => {
         this.chromosomeLength = chromosomeLength;
         this.geneCount = geneCount;
         this.generation = generation;
         this.mutationRate = mutationRate;
         this.maxPopulationSize = maxPopulationSize;
+        this.population = initialPopulation;
         this.fitness = fitness;
         this.customSelectParents = selection;
         this.customCrossover = crossover;
@@ -142,6 +144,7 @@ export class GeneticAlgorithm {
             const parentPool = this.selectParents();
             // Crossover (breeding) with mutation
             this.crossoverSelection(parentPool);
+            this.calculateFitness();
             // Control population size
             this.purgePopulation();
             this.spawnPopulation();
@@ -195,8 +198,10 @@ export class GeneticAlgorithm {
         let result: Entity[] = [];
         // K-way tournament
         // Calculate sample space
-        let maxProb = temp[0].fitness + 1;
-        maxProb = maxProb * (maxProb + 1) / 2;
+        let maxProb = 0;
+        this.population.forEach((entity: Entity) => {
+            maxProb += entity.fitness + 1; // Padding 1 unit since there is 0 score.
+        })
         // Pick up entities until enough size reached
         let i = 0;
         while (parentPoolSize) {
@@ -204,6 +209,8 @@ export class GeneticAlgorithm {
                 result.push(temp[i]);
                 parentPoolSize--;
                 temp.splice(i, 1); // Remove picked entity from list
+                i = i % temp.length;
+                continue;
             }
             i = (i + 1) % temp.length;
         }
@@ -217,7 +224,7 @@ export class GeneticAlgorithm {
      */
     private crossoverSelection = (parentPool: Entity[]) => {
         let maxI = parentPool.length - 1;
-        let maxJ = parentPool.length
+        let maxJ = parentPool.length;
         for (let i = 0; i < maxI; ++i) {
             for (let j = i+1; j < maxJ; ++j) {
                 this.population.push(...this.crossover(parentPool[i], parentPool[j]));
@@ -264,7 +271,7 @@ export class GeneticAlgorithm {
      */
     private purgePopulation = () => {
         this.population.sort((a: Entity, b: Entity) => {
-            return Math.round(b.fitness - a.fitness) // Descending fitness score
+            return b.fitness - a.fitness // Descending fitness score
         });
         const eliteCount = Math.floor(this.maxPopulationSize * this.eliteRate);
         this.population.splice(eliteCount);
