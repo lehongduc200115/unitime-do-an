@@ -2,6 +2,7 @@ import readXlsxFile from "read-excel-file";
 import { readSheetNames } from "read-excel-file";
 import _ from "lodash";
 import { timetableMapping, excelSchemaMapping } from "./xlsx/mapping";
+import constants from "./constants";
 
 interface IReaderOptions {
   isTimetableEmbedded: boolean;
@@ -17,7 +18,30 @@ function getMappingName(tableName: string): string {
   return _.camelCase(tableName);
 }
 
-async function xlsxToJson(
+async function xlsxToJson(file: File): Promise<IReaderResult[]> {
+  try {
+    const sheetNames = await getSheetNames(file);
+
+    return Promise.all(
+      sheetNames.map(async (sheetName) => {
+        const { rows, errors } = await readXlsxFile(file, {
+          map: excelSchemaMapping[getMappingName(sheetName)],
+          sheet: sheetName,
+        });
+
+        return {
+          error: errors,
+          rows: rows,
+          sheetName: sheetName,
+        };
+      })
+    );
+  } catch (e) {
+    console.log("error while handling excel reader: ", e);
+  }
+}
+
+async function xlsxToJson2(
   file: File,
   readerOptions: IReaderOptions
 ): Promise<IReaderResult[]> {
@@ -88,7 +112,9 @@ async function xlsxToJson(
 }
 
 async function getSheetNames(file: File) {
-  return await readSheetNames(file);
+  return await (
+    await readSheetNames(file)
+  ).filter((it) => Object.values(timetableMapping).map((it) => it.table));
 }
 
 function parseTimetableToBooleans(rows: any[], sheet: string) {
@@ -109,7 +135,39 @@ function parseTimetableToBooleans(rows: any[], sheet: string) {
   return associatedObject;
 }
 
+function getHeadersFromSchema() {
+  const res: { [key: string]: { value: string }[] } = {};
+
+  Object.keys(excelSchemaMapping).map((key) => {
+    if (res[key] == undefined) res[key] = [];
+    Object.keys(excelSchemaMapping[key]).forEach((it) => {
+      res[key].push({ value: it });
+    });
+  });
+
+  return res;
+}
+
+function getKeyFromSheetName(sheetName: string): string {
+  const sheetNames = Object.keys(timetableMapping).filter(
+    (key: string): boolean => {
+      return timetableMapping[key].table === sheetName;
+    }
+  );
+
+  return sheetNames.length >= 1 ? sheetNames[0] : constants.DEFAULT_SHEETNAME;
+}
+
+function getColumnNames(sheetName: string): string[] {
+  const key = getKeyFromSheetName(sheetName);
+  const sheetSchema = excelSchemaMapping[key];
+  return Object.values(sheetSchema || {});
+}
+
 export default {
   xlsxToJson,
   getSheetNames,
+  getHeadersFromSchema,
+  getKeyFromSheetName,
+  getColumnNames,
 };

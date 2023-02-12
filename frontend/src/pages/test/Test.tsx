@@ -2,13 +2,43 @@ import axios from 'axios';
 import * as React from 'react';
 import helpers from 'src/helpers/helpers';
 import { IReaderResult } from '../../helpers/helpers';
+import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
+import { IImportedData } from './interface';
+import constants from '../../helpers/constants'
+
+const visualizeData = (importedData: IImportedData) => {
+  console.log(`importedData: ${JSON.stringify(importedData)}`)
+  let sheets: any = helpers.getHeadersFromSchema();
+  Object.keys(sheets).forEach((key: string) => {
+    sheets[key] = [sheets[key]]
+  })
+  console.log(`sheets: ${JSON.stringify(sheets)}`)
+  importedData.forEach(sheet => {
+    const key = helpers.getKeyFromSheetName(sheet.sheetName);
+    console.log(`helpers.getKeyFromSheetName(sheet.sheetName): ${key}`)
+    if (key !== constants.DEFAULT_SHEETNAME)
+      sheets[key] = sheets[key].concat(sheet.rows.map(row => {
+        const columnNames = helpers.getColumnNames(sheet.sheetName)
+        return columnNames.map(column => {
+          return {
+            value: (row[column] === undefined) ? "" : row[column]
+          }
+        })
+      }))
+  })
+
+  console.log(`sheet: ${JSON.stringify(sheets)}`)
+
+  return sheets;
+}
 
 export default function Test() {
   async function handleOnChange(e: any) {
-    const res = await helpers.xlsxToJson(e.target.files[0], {
-      "isTimetableEmbedded": true
-    })
-    setResult(res);
+    const res = await helpers.xlsxToJson(e.target.files[0])
+    const sheetNames = await helpers.getSheetNames(e.target.files[0])
+    setSheetNames(sheetNames)
+    setResult(res)
+    setDataa(visualizeData(res));
   }
   async function handleOnClick(e: any) {
     const obj: Record<string, any> = {}
@@ -45,7 +75,10 @@ export default function Test() {
     setFetchResult(obj);
   }
 
+
   const [result, setResult] = React.useState<IReaderResult[]>([])
+  const [data, setDataa] = React.useState<any>([])
+  const [sheetNames, setSheetNames] = React.useState<any>([])
   const [importResult, setImportResult] = React.useState(null)
   const [fetchResult, setFetchResult] = React.useState(null)
   return <div>
@@ -64,5 +97,14 @@ export default function Test() {
     <p>fetch goes here: <button onClick={handleOnClickFetch}>fetch</button></p>
 
     <p>result fetch goes here: {JSON.stringify(fetchResult)}</p>
+    {Object.keys(data).map((it) => {
+      // console.log(Object.keys(data))
+      return <div>
+        <Spreadsheet data={data[it] as any} />
+        <br />
+      </div>
+    })}
+    {/* <Spreadsheet data={[data["class"]] as any || []}></Spreadsheet> */}
+    <p>sheetname: {sheetNames}</p>
   </div>
 }
