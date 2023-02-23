@@ -7,7 +7,7 @@ import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
  * - If there is 2 room slot conflicted in the final result, count as suggestion (one will not be in final schedule, manual adjustment is needed)
  */
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * List phòng: [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -43,11 +43,12 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const fitness = (entity: Entity) => {
   let score = 0;
   const totalFreeSlot = 9;
-  entity.chromosome.forEach((value: number, index: number) => {
+  entity.chromosome.forEach((value: number, _index: number) => {
     let freeSlotId = value % totalFreeSlot; // 5
     let instructorId = Math.floor(value / totalFreeSlot); // 1
 
-    score = score + (value == parseInt(res[index]) ? 1 : 0);
+    //TODO: what is res?
+    // score = score + (value == parseInt(res[index]) ? 1 : 0);
   });
   return score;
 };
@@ -108,35 +109,38 @@ const crossover = (first: Entity, second: Entity) => {
 };
 
 // Test
-const main = async () => {
-  let engine = new GeneticAlgorithm();
-  engine.configurate({
-    chromosomeLength: 21,
-    geneCount: 21,
-    generation: 10000,
-    mutationRate: 0.01,
-    maxPopulationSize: 50,
-    // selection: selection,
-    // crossover: crossover,
-    fitness: fitness,
-    eliteRate: 0.1,
-    // initialPopulation: [
-    //     new Entity(10, 10, [0, 9, 1, 7, 4, 5, 0, 1, 4, 2]),
-    //     new Entity(10, 10, [0, 4, 2, 7, 2, 5, 0, 1, 0, 2]),
-    // ]
-  });
+export default {
+  gaEngine: async (length: number, genCount: number, chromosome: number[]) => {
+    let engine = new GeneticAlgorithm();
+    engine.configurate({
+      chromosomeLength: 21,
+      geneCount: 21,
+      generation: 10000,
+      mutationRate: 0.01,
+      maxPopulationSize: 50,
+      // selection: selection,
+      // crossover: crossover,
+      fitness: fitness,
+      eliteRate: 0.1,
+      initialPopulation: [new Entity(length, genCount, chromosome)],
+      // initialPopulation: [
+      //     new Entity(10, 10, [0, 9, 1, 7, 4, 5, 0, 1, 4, 2]),
+      //     new Entity(10, 10, [0, 4, 2, 7, 2, 5, 0, 1, 0, 2]),
+      // ]
+    });
 
-  let res = engine.run();
+    let res = engine.run();
 
-  for (let i = 0; i < 10; ++i) {
-    console.log(
-      ...res[i].chromosome.map((x: number) => {
-        return x.toString();
-      }),
-      "+",
-      res[i].fitness
-    );
-  }
+    for (let i = 0; i < 10; ++i) {
+      console.log(
+        ...res[i].chromosome.map((x: number) => {
+          return x.toString();
+        }),
+        "+",
+        res[i].fitness
+      );
+    }
+  },
 };
 
-main();
+// main();

@@ -6,7 +6,7 @@ import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
 import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
 
-const visualizeData = (importedData: IImportedData) => {
+const visualizeData = async (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
   let sheets: any = helpers.getHeadersFromSchema();
   Object.keys(sheets).forEach((key: string) => {
@@ -28,6 +28,18 @@ const visualizeData = (importedData: IImportedData) => {
   })
 
   console.log(`sheet: ${JSON.stringify(sheets)}`)
+  const ret = await axios.post(`http://localhost:8000/import`, {
+    data: importedData.map((it: any) => {
+      return {
+        data: {
+          rows: it.rows,
+          sheetName: it.sheetName
+        }
+      }
+    })
+  })
+
+  console.log(`ret: ${JSON.stringify(ret)}`)
 
   return sheets;
 }
@@ -62,7 +74,7 @@ export default function Test() {
 
   async function handleOnClickFetch() {
     const obj: Record<string, any> = {};
-    const sheet = [{ sheetName: "subject" }, { sheetName: "room" }, { sheetName: "lecturer" }]
+    const sheet = [{ sheetName: "subject" }, { sheetName: "room" }, { sheetName: "instructor" }]
     sheet.forEach(async it => {
       try {
         const result = await axios.get(`http://localhost:8000/${it.sheetName.toLowerCase()}`)

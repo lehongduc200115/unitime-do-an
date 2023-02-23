@@ -32,12 +32,8 @@ const roomSchema = new mongoose_1.Schema({
         unique: true,
         required: true,
     },
-    department: {
+    label: {
         type: String,
-        required: true,
-    },
-    weeklyTimetable: {
-        type: [Array],
         required: true,
     },
     status: {
@@ -48,13 +44,6 @@ const roomSchema = new mongoose_1.Schema({
     capacity: {
         type: Number,
         default: -1,
-    },
-    classType: {
-        type: String,
-        default: enum_1.ClassType.LEC,
-    },
-    coordinate: {
-        type: Object,
     },
     createdBy: {
         type: String,

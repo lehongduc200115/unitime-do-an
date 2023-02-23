@@ -1,24 +1,28 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
 
-export interface IRoom {
+export interface IInstructor {
   id: string;
-  label: string;
+  name: string;
+  department: string;
   status?: Status;
-  capacity: number;
   createdBy?: string;
   updatedBy?: string;
 }
-export type RoomDocument = IRoom & Document;
+export type InstructorDocument = IInstructor & Document;
 
-const roomSchema: Schema<RoomDocument> = new Schema(
+const instructorSchema: Schema<InstructorDocument> = new Schema(
   {
     id: {
       type: String,
+      required: true,
       unique: true,
+    },
+    name: {
+      type: String,
       required: true,
     },
-    label: {
+    department: {
       type: String,
       required: true,
     },
@@ -26,10 +30,6 @@ const roomSchema: Schema<RoomDocument> = new Schema(
       type: String,
       default: Status.ACTIVE,
       index: true,
-    },
-    capacity: {
-      type: Number,
-      default: -1,
     },
     createdBy: {
       type: String,
@@ -44,11 +44,11 @@ const roomSchema: Schema<RoomDocument> = new Schema(
   }
 );
 
-roomSchema.set("toObject", {
+instructorSchema.set("toObject", {
   virtuals: true,
 });
 
-export const RoomModel: Model<RoomDocument> = mongoose.model(
-  "room",
-  roomSchema
+export const InstructorModel: Model<InstructorDocument> = mongoose.model(
+  "instructor",
+  instructorSchema
 );

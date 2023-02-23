@@ -1,6 +1,5 @@
 import { RouteOptionsValidate } from "@hapi/hapi";
 import Joi from "joi";
-import { ClassType } from "../common/enum";
 
 const idParamValidator = Joi.object({
   id: Joi.string().hex().length(24),
@@ -15,7 +14,13 @@ export const createValidator: RouteOptionsValidate = {
     Joi.object({
       id: Joi.string(),
       name: Joi.string(),
-      department: Joi.string(),
+      classId: Joi.string(),
+      studentId: Joi.string(),
+      instructorId: Joi.string(),
+      roomId: Joi.string(),
+      weekDay: Joi.number(),
+      startTime: Joi.number(),
+      endTime: Joi.number(),
     })
   ),
 };

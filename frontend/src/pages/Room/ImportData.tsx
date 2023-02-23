@@ -236,7 +236,7 @@ const ImportData = () => {
         <AccordionDetails>
           <Box textAlign='center'>
             <Typography variant='body1' sx={styles.textDetail}>
-              Upload 1 xlsx file contains all required sheet: Subject, Room, Lecturer, Timetable sheets.
+              Upload 1 xlsx file contains all required sheet: Subject, Room, Instructor, Timetable sheets.
             </Typography>
             <ButtonGroup
               sx={styles.uploadButton}

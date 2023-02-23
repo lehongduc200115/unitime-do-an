@@ -73,8 +73,8 @@ export const timetableMapping: Record<string, any> = {
   enrollment: { table: "Enrollment" },
   class: { table: "Class" },
   newSubject: { table: "NewSubject" },
-  // lecturer: { table: "Lecturer Timetable", refId: "lecturerId" },
-  // lecturer: { table: "Lecturer Timetable", refId: "lecturerId" },
-  // lecturer: { table: "Lecturer Timetable", refId: "lecturerId" },
-  // lecturer: { table: "Lecturer Timetable", refId: "lecturerId" },
+  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
+  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
+  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
+  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
 };

@@ -1,3 +1,3 @@
 export const constants = {
-  LECTURER_PATH: "lecturer",
+  CLASS_PATH: "class",
 };
