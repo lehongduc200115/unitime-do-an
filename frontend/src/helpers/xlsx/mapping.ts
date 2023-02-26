@@ -62,6 +62,7 @@ export const excelSchemaMapping: Record<string, any> = {
     PREFERED_TIME: "preferedTime",
     CAPACITY: "capacity",
     CLASS_TYPE: "classType",
+    INSTRUCTORS: "instructors",
   },
 };
 
