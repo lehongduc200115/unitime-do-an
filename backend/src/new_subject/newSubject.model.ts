@@ -10,6 +10,7 @@ export interface INewSubject {
   preferedTime: string;
   capacity: number;
   classType: string;
+  instructors: string;
   status?: Status;
   createdBy?: string;
   updatedBy?: string;
@@ -43,6 +44,9 @@ const newSubjectSchema: Schema<NewSubjectDocument> = new Schema(
     },
     capacity: {
       type: Number,
+    },
+    instructors: {
+      type: String,
     },
     classType: {
       type: String,

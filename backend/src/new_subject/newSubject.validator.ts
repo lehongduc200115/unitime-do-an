@@ -21,6 +21,7 @@ export const createValidator: RouteOptionsValidate = {
       preferedTime: Joi.number(),
       capacity: Joi.number(),
       classType: Joi.string().optional(),
+      instructors: Joi.string(),
     })
   ),
 };
