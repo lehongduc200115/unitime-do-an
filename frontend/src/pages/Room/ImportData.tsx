@@ -24,6 +24,14 @@ import { useEffect, useState } from 'react';
 
 import { generateRowsInfo } from './util';
 
+function safeStringify(value: any) {
+  const seen = new Set()
+  return JSON.stringify(value, (k, v) => {
+    if (seen.has(v)) { return '...' }
+    if (typeof v === 'object') { seen.add(v) }
+    return v
+  })
+}
 
 const MetadataField = () => {
   return (
@@ -148,11 +156,12 @@ const ImportData = () => {
   const [expanded, setExpanded] = useState<string | false>('panel2');
   // const [isUploading, setIsUploading] = useState(false);
 
-  const handleBrowseFile = (event: any, isDetail: boolean) => {
-    const file = event?.target?.files[0];
-    console.log(`file: ${JSON.stringify(file)}`)
-    console.log(`event: ${JSON.stringify(event)}`)
-    console.log(`files: ${JSON.stringify(event?.target?.files)}`)
+  const handleBrowseFile = (event: any, isDetail: boolean = true) => {
+    const file = event.target.files[0];
+    // console.log(`event.target: ${safeStringify(event.target.files[0].name)}`)
+    console.log(`name: ${JSON.stringify(event.target.files[0].name)}`)
+    console.log(`file: ${JSON.stringify(event.target.files[0])}`)
+    // console.log(`event: ${JSON.stringify(event)}`)
     if (file) {
       const setFile = isDetail ? setFileDetail : setFileTime;
       setFile(file);
@@ -227,7 +236,7 @@ const ImportData = () => {
         <AccordionDetails>
           <Box textAlign='center'>
             <Typography variant='body1' sx={styles.textDetail}>
-              Upload 1 xlsx file contains all required sheet: Subject, Room, Lecturer, Timetable sheets.
+              Upload 1 xlsx file contains all required sheet: Subject, Room, Instructor, Timetable sheets.
             </Typography>
             <ButtonGroup
               sx={styles.uploadButton}
@@ -237,14 +246,15 @@ const ImportData = () => {
                 startIcon={<ScreenSearchDesktopIcon />}
                 component="label"
               >
-                Browse detail
+                Browse detail 2
                 <input
                   type="file"
-                  accept=".csv, .xlsx"
+                  // accept=".csv, .xlsx"
                   onChange={
-                    (event) => { handleBrowseFile(event, true); }
+                    (e) => { handleBrowseFile(e); }
                   }
-                  hidden
+                // onChange={(e) => { console.log("abc " + e.target.files[0].name) }}
+                // hidden
                 />
               </Button>
             </ButtonGroup>

@@ -1,45 +1,35 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
 
-export interface ILecturer {
+export interface IEnrollment {
   id: string;
-  name: string;
-  department: string;
-  weeklyTimetable: [IDailyTimetable];
+  classId: string;
+  studentId: string;
   status?: Status;
-  classType: ClassType;
   createdBy?: string;
   updatedBy?: string;
 }
-export type LecturerDocument = ILecturer & Document;
+export type EnrollmentDocument = IEnrollment & Document;
 
-const lecturerSchema: Schema<LecturerDocument> = new Schema(
+const enrollmentSchema: Schema<EnrollmentDocument> = new Schema(
   {
     id: {
       type: String,
       required: true,
       unique: true,
     },
-    name: {
+    classId: {
       type: String,
       required: true,
     },
-    department: {
+    studentId: {
       type: String,
-      required: true,
-    },
-    weeklyTimetable: {
-      type: [Array],
       required: true,
     },
     status: {
       type: String,
       default: Status.ACTIVE,
       index: true,
-    },
-    classType: {
-      type: String,
-      default: ClassType.ALL,
     },
     createdBy: {
       type: String,
@@ -54,11 +44,11 @@ const lecturerSchema: Schema<LecturerDocument> = new Schema(
   }
 );
 
-lecturerSchema.set("toObject", {
+enrollmentSchema.set("toObject", {
   virtuals: true,
 });
 
-export const LecturerModel: Model<LecturerDocument> = mongoose.model(
-  "lecturer",
-  lecturerSchema
+export const EnrollmentModel: Model<EnrollmentDocument> = mongoose.model(
+  "enrollment",
+  enrollmentSchema
 );

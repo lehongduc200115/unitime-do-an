@@ -1,14 +1,14 @@
 import { ClassType, Status } from "../common/enum";
 
-export interface ISubjectPayload {
+export interface INewSubjectPayload {
   id: string;
   name: string;
   department: string;
   status?: Status;
 }
 
-export interface ISubjectRequest extends Request {
-  payload: ISubjectPayload[];
+export interface INewSubjectRequest extends Request {
+  payload: INewSubjectPayload[];
 }
 
 export interface IClassHour {

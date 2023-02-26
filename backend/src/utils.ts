@@ -62,14 +62,14 @@ const permutator = (subjectIds: string[]) => {
 //   return result;
 // };
 
-const performGaTimetable = (
-  classTTble: IDailyTimetable[],
-  roomTTble: IDailyTimetable[],
-  lecturerTTbl: IDailyTimetable[]
-): IDailyTimetable[] => {
-  // perform Ga
-  return [
-    [true, true, false],
-    [false, false],
-  ];
-};
+// const performGaTimetable = (
+//   classTTble: IDailyTimetable[],
+//   roomTTble: IDailyTimetable[],
+//   instructorTTbl: IDailyTimetable[]
+// ): IDailyTimetable[] => {
+//   // perform Ga
+//   return [
+//     [true, true, false],
+//     [false, false],
+//   ];
+// };

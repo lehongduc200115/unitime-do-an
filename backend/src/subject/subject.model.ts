@@ -7,8 +7,6 @@ export interface ISubject {
   name: string;
   department: string;
   status?: Status;
-  hour?: IClassHour;
-  classType: ClassType;
   createdBy?: string;
   updatedBy?: string;
 }
@@ -31,13 +29,6 @@ const subjectSchema: Schema<SubjectDocument> = new Schema(
       type: String,
       default: Status.ACTIVE,
       index: true,
-    },
-    hour: {
-      type: Object,
-    },
-    classType: {
-      type: String,
-      default: ClassType.ALL,
     },
     createdBy: {
       type: String,
