@@ -1,7 +1,7 @@
 import { ResponseToolkit, ServerRoute } from "@hapi/hapi";
 import { Request } from "hapi";
 import { HttpMethod, HttpStatus } from "../common/httpConstant";
-import gaEngine from "../gaEngine/gaEngine";
+import { engine } from "../gaEngine/gaEngine";
 import { ISheetRequest } from "./sheet.interface";
 
 const postSheet: ServerRoute = {
@@ -12,16 +12,15 @@ const postSheet: ServerRoute = {
     tags: ["api", "import sheet"],
     handler: async (request: ISheetRequest, h: ResponseToolkit) => {
       const data = request.payload;
-
       // TODO: Code o day ne duc oi
       // transform "data" -> feed vao engine
       // good luck
-      // const solve = gaEngine();
+      const solve = engine(data.data);
 
       return h
         .response({
           status: "success",
-          data: data.data,
+          data: solve,
         })
         .code(HttpStatus.OK);
     },
