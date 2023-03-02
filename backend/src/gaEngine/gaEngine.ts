@@ -86,6 +86,7 @@ class EngineInput {
         let roomInput: any[] = [];
         let timetableInput: any[] = [];
         let instructorInput: any[] = [];
+        let enrollmentInput: any[] = [];
         let classesInput: any[] = [];
 
 
@@ -107,6 +108,7 @@ class EngineInput {
                     break;
                 }
                 case "Enrollment": {
+                    enrollmentInput.push(item);
                     break;
                 }
                 case "Class": {
@@ -126,6 +128,9 @@ class EngineInput {
 
         this.convertSubject(subjectInput);
         this.convertTimetable(timetableInput);
+        this.convertRoom(roomInput);
+        this.convertEnrollment(enrollmentInput);
+        this.convertClasses();
     }
 
     private convertSubject(input: any[]) {
@@ -150,7 +155,7 @@ class EngineInput {
         });
     }
 
-    private convertTimetable(input: any[]) {
+    private convertTimetable(input: any[]) { // IClass[]
         input.forEach((item: any, i: number) => {
             let res = {
                 id: i,
@@ -165,7 +170,7 @@ class EngineInput {
         });
     }
 
-    private convertRoom(input: any[]) {
+    private convertRoom(input: any[]) { // IRoom[]
         input.forEach((item: any, i: number) => {
             let res = {
                 id: i,
@@ -178,7 +183,7 @@ class EngineInput {
         });
     }
 
-    private convertEnrollment(input: any[]) {
+    private convertEnrollment(input: any[]) { // IEnrollment[]
         const originClassCount = this.timetable.length;
         let currClassId = -1;
 
