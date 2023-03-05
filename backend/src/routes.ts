@@ -5,7 +5,6 @@ import roomController from "./room/room.controller";
 import subjectController from "./subject/subject.controller";
 import userController from "./user/user.controller";
 import enrollmentController from "./enrollment/enrollment.controller";
-import newSubjectController from "./new_subject/newSubject.controller";
 import studentController from "./student/student.controller";
 
 const routes = [
@@ -16,7 +15,6 @@ const routes = [
   ...subjectController,
   ...sheetController,
   ...enrollmentController,
-  ...newSubjectController,
   ...studentController,
 ];
 

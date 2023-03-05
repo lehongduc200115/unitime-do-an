@@ -4,6 +4,7 @@ import { ClassType, Status } from "../common/enum";
 export interface IRoom {
   id: string;
   label: string;
+  department: string;
   status?: Status;
   capacity: number;
   classType: string;
@@ -18,6 +19,9 @@ const roomSchema: Schema<RoomDocument> = new Schema(
       type: String,
       unique: true,
       required: true,
+    },
+    department: {
+      type: String,
     },
     label: {
       type: String,

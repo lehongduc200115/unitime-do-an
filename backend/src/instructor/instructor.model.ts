@@ -20,7 +20,6 @@ const instructorSchema: Schema<InstructorDocument> = new Schema(
     },
     name: {
       type: String,
-      required: true,
     },
     department: {
       type: String,

@@ -6,42 +6,23 @@ export const excelSchemaMapping: Record<string, any> = {
     // CLASS_TYPE: "classType",
     DEPARTMENT: "department",
   },
-  enrollment: {
-    ID: "id",
-    CLASS_ID: "classId",
-    STUDENT_ID: "studentId",
-  },
   room: {
     ID: "id",
     LABEL: "label",
     DEPARTMENT: "department",
-    // WEEKLY_TIME_TALBLE: "weeklyTimetable",s
     CAPACITY: "capacity",
     CLASS_TYPE: "classType",
-    // COORDINATE: {
-    //   coordinate: {
-    //     ZONE: "zone",
-    //     BLOCK: "block",
-    //     LEVEL: "level",
-    //   },
-    // },
+  },
+  enrollment: {
+    ID: "id",
+    CLASS_ID: "classId",
+    SUBJECT_ID: "subjectId",
+    STUDENT_ID: "studentId",
   },
   instructor: {
     ID: "id",
     DEPARTMENT: "department",
     NAME: "name",
-  },
-  subject: {
-    ID: "id",
-    NAME: "name",
-    DEPARTMENT: "department",
-    // CLASS_TYPE: "classType",
-    // HOUR: {
-    //   hour: {
-    //     NUM_LAB_HOURS: "lab",
-    //     NUM_LEC_HOURS: "lec",
-    //   },
-    // },
   },
   class: {
     ID: "id",
@@ -53,15 +34,16 @@ export const excelSchemaMapping: Record<string, any> = {
     START_TIME: "startTime",
     END_TIME: "endTime",
   },
-  newSubject: {
+  subject: {
     DEPARTMENT: "department",
     NAME: "name",
     NUM_LAB_HOURS: "numLabHours",
     NUM_LEC_HOURS: "numLecHours",
     PREFERED_WEEKDAY: "preferedWeekDay",
     PREFERED_TIME: "preferedTime",
-    CAPACITY: "capacity",
-    CLASS_TYPE: "classType",
+    LEC_CAPACITY: "lecCapacity",
+    LAB_CAPACITY: "labCapacity",
+    LAB_TYPE: "labType",
     INSTRUCTORS: "instructors",
   },
 };
@@ -73,9 +55,4 @@ export const timetableMapping: Record<string, any> = {
   student: { table: "Student" },
   enrollment: { table: "Enrollment" },
   class: { table: "Class" },
-  newSubject: { table: "NewSubject" },
-  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
-  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
-  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
-  // instructor: { table: "Instructor Timetable", refId: "instructorId" },
 };

@@ -13,9 +13,15 @@ export const getValidator: RouteOptionsValidate = {
 export const createValidator: RouteOptionsValidate = {
   payload: Joi.array().items(
     Joi.object({
-      id: Joi.string(),
       name: Joi.string(),
       department: Joi.string(),
+      numLabHours: Joi.number(),
+      numLecHours: Joi.number(),
+      preferedWeekDay: Joi.number(),
+      preferedTime: Joi.number(),
+      capacity: Joi.number(),
+      classType: Joi.string().optional(),
+      instructors: Joi.string(),
     })
   ),
 };

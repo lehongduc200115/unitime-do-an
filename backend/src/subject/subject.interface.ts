@@ -1,4 +1,4 @@
-import { ClassType, Status } from "../common/enum";
+import { Status } from "../common/enum";
 
 export interface ISubjectPayload {
   id: string;
