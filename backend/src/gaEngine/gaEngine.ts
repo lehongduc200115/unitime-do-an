@@ -355,16 +355,13 @@ const fitness = (entity: Entity) => {
     let availableRoomSlot = engineInput.availableRoomSlot.map((e: any) => ({...e})); // Clone of available room slot
     let instructor = engineInput.instructor.map((e: any) => ({...e})); // Clone of instructors
 
-    let availableSlotCount: number = engineInput.availableRoomSlot.length;
-
     const totalFreeSlot = 9; // EngineInput availableRoomSlot length
     entity.chromosome.forEach((value: number, newClassIndex: number) => {
         const slotId = value % totalFreeSlot;
         const instructorId = Math.floor(value / totalFreeSlot);
 
-
         // Check for appropritate instructor (instructor - class)
-        if (engineInput.classes[newClassIndex].instructors.indexOf(instructorId) < 0) {
+        if (instructorId >= engineInput.classes[newClassIndex].instructors.length) {
             return;
         }
         // Check for valid slot (class - room)
@@ -404,13 +401,19 @@ const fitness = (entity: Entity) => {
 // Test
 export const engine = (input: any) => {
     engineInput = new EngineInput(input);
+    let geneCount = 0;
+    engineInput.classes.forEach((item: any) => {
+        geneCount = Math.max(geneCount, item.instructors.length);
+    });
+    geneCount = geneCount * engineInput.availableRoomSlot.length
+
     let engine = new GeneticAlgorithm();
     engine.configurate({
         chromosomeLength: engineInput.classes.length,
-        geneCount: engineInput.instructor.length * engineInput.availableRoomSlot.length,
-        generation: 100000,
+        geneCount: geneCount,
+        generation: 1000,
         mutationRate: 0.01,
-        maxPopulationSize: 100,
+        maxPopulationSize: 500,
         fitness: fitness,
         eliteRate: 0.1,
         // initialPopulation: [
