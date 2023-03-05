@@ -91,7 +91,9 @@ export class GeneticAlgorithm {
     private eliteRate: number;
     // private notableEntities: Entity[] = [];
 
-    constructor() {}
+    constructor() {
+        console.log(`Duke test`);
+    }
 
 
     /**
@@ -147,6 +149,8 @@ export class GeneticAlgorithm {
      * @returns The final population
      */
     public run = () => {
+
+        console.log(`Duke test: ${JSON.stringify(this.population)}`);
         // Main loop
         let loop = Math.max(1, this.generation);
         while (true) {
@@ -162,7 +166,7 @@ export class GeneticAlgorithm {
             this.crossoverSelection(parentPool);
             // Control population size
             this.purgePopulation();
-
+            
             loop--;
         }
         
