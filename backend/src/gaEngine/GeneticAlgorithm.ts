@@ -152,6 +152,8 @@ export class GeneticAlgorithm {
       while (true) {
           // Generate population
           this.spawnPopulation();
+          
+          console.log(`${loop} generation left`);
           // Early stopping condition satisfied?
           if (loop <= 0 || this.earlyStop?.(this.population)) {
               break;

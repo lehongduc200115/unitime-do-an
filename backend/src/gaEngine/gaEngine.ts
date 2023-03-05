@@ -89,7 +89,6 @@ class EngineInput {
         let enrollmentInput: any[] = [];
 
 
-        // console.log(`Duke test: ${item.JSON}`);
         input.forEach((item: any) => {
             switch (item.data.sheetName) {
                 case "Subject": {
@@ -125,6 +124,7 @@ class EngineInput {
         this.convertSubject(subjectInput);
         this.convertTimetable(timetableInput);
         this.convertRoom(roomInput);
+        this.convertInstructor(instructorInput);
         this.convertEnrollment(enrollmentInput);
 
         this.convertClasses();
@@ -133,15 +133,16 @@ class EngineInput {
 
     private convertClasses() {
         const originClassCount = this.timetable.length;
+
         this.enrollment.forEach((item: any) => {
             // Divide classes base on student count
-            let lecClassCount = item.students.length / item.lecClassCount;
+            let lecClassCount = item.students.length / item.lecCapacity;
             if (lecClassCount < 0.5) {
                 lecClassCount = 0;
             } else {
                 lecClassCount = Math.ceil(lecClassCount);
             }
-            let labClassCount = lecClassCount == 0 ? 0 : Math.ceil(item.students.length / item.labClassCount);
+            let labClassCount = lecClassCount == 0 ? 0 : Math.ceil(item.students.length / item.labCapacity);
             // Assign classes to be added
             let newClassId = originClassCount;
             for (let i = 0; i < lecClassCount; ++i) {
@@ -169,18 +170,18 @@ class EngineInput {
 
     private convertEnrollment(input: any[]) { // IEnrollment[]
         const originClassCount = this.timetable.length;
-        let currClassId = -1;
+        let currId = -1;
 
         input.forEach((item: any) => {
-            if (item.classId < originClassCount) {
-                if (item.classId != currClassId) { // Iterate to next class
-                    currClassId = item.classId;
+            if (item.classId !== undefined) {
+                if (item.classId != currId) { // Iterate to next class
+                    currId = item.classId;
                     this.studentTimetable.push([]);
                 }
                 this.studentTimetable[item.classId].push(item.studentId);
             } else {
-                if (item.classId != currClassId) { // Iterate to next new subject
-                    currClassId = item.classId;
+                if (item.subjectId != currId) { // Iterate to next new subject
+                    currId = item.subjectId;
                     // Store enrolled student first, then divide classes later
                     const obj = {
                         numLecHours: this.subject[item.subjectId].numLecHours,
@@ -196,6 +197,17 @@ class EngineInput {
                     this.enrollment[this.enrollment.length - 1].students.push(item.studentId);
                 }
             }
+        });
+    }
+
+    private convertInstructor(input: any[]) { // IInstructor[]
+        input.forEach((item: any, i: number) => {
+            const obj = {
+                id: i,
+                name: item.name,
+                department: item.department
+            }
+            this.instructor.push(obj);
         });
     }
 
@@ -396,9 +408,9 @@ export const engine = (input: any) => {
     engine.configurate({
         chromosomeLength: engineInput.classes.length,
         geneCount: engineInput.instructor.length * engineInput.availableRoomSlot.length,
-        generation: 1,
+        generation: 100000,
         mutationRate: 0.01,
-        maxPopulationSize: 20,
+        maxPopulationSize: 100,
         fitness: fitness,
         eliteRate: 0.1,
         // initialPopulation: [
