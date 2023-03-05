@@ -4,6 +4,7 @@ import { ClassType, Status } from "../common/enum";
 export interface IEnrollment {
   id: string;
   classId: string;
+  subjectId: string;
   studentId: string;
   status?: Status;
   createdBy?: string;
@@ -17,6 +18,10 @@ const enrollmentSchema: Schema<EnrollmentDocument> = new Schema(
       type: String,
       required: true,
       unique: true,
+    },
+    subjectId: {
+      type: String,
+      required: true,
     },
     classId: {
       type: String,

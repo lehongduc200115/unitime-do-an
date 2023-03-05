@@ -14,7 +14,7 @@ export const createValidator: RouteOptionsValidate = {
   payload: Joi.array().items(
     Joi.object({
       id: Joi.string(),
-      name: Joi.string(),
+      name: Joi.string().optional(),
       department: Joi.string(),
     })
   ),

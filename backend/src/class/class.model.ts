@@ -4,8 +4,7 @@ import { Status } from "../common/enum";
 export interface IClass {
   id: string;
   name: string;
-  classId: string;
-  studentId: string;
+  subjectId: string;
   instructorId: string;
   roomId: string;
   weekDay: number;
@@ -24,11 +23,10 @@ const classSchema: Schema<ClassDocument> = new Schema(
       required: true,
       unique: true,
     },
-    classId: {
+    name: {
       type: String,
-      required: true,
     },
-    studentId: {
+    subjectId: {
       type: String,
       required: true,
     },

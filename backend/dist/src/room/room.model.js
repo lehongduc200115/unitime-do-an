@@ -32,6 +32,9 @@ const roomSchema = new mongoose_1.Schema({
         unique: true,
         required: true,
     },
+    department: {
+        type: String,
+    },
     label: {
         type: String,
         required: true,
@@ -44,6 +47,11 @@ const roomSchema = new mongoose_1.Schema({
     capacity: {
         type: Number,
         default: -1,
+    },
+    classType: {
+        type: String,
+        default: enum_1.ClassType.LEC,
+        index: true,
     },
     createdBy: {
         type: String,

@@ -16,7 +16,10 @@ const visualizeData = async (importedData: IImportedData) => {
   importedData.forEach(sheet => {
     const key = helpers.getKeyFromSheetName(sheet.sheetName);
     console.log(`helpers.getKeyFromSheetName(sheet.sheetName): ${key}`)
-    if (key !== constants.DEFAULT_SHEETNAME)
+    // if (key !== "")
+    if (key !== constants.DEFAULT_SHEETNAME) {
+      console.log(`key: ${key}`)
+      console.log(`sheets: ${sheets}`)
       sheets[key] = sheets[key].concat(sheet.rows.map(row => {
         const columnNames = helpers.getColumnNames(sheet.sheetName)
         return columnNames.map(column => {
@@ -25,6 +28,15 @@ const visualizeData = async (importedData: IImportedData) => {
           }
         })
       }))
+    }
+    sheets[key] = sheets[key].concat(sheet.rows.map(row => {
+      const columnNames = helpers.getColumnNames(sheet.sheetName)
+      return columnNames.map(column => {
+        return {
+          value: (row[column] === undefined) ? "" : row[column]
+        }
+      })
+    }))
   })
 
   console.log(`sheet: ${JSON.stringify(sheets)}`)

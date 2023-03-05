@@ -1,11 +1,16 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
-import { IClassHour } from "./subject.interface";
 
 export interface ISubject {
-  id: string;
   name: string;
   department: string;
+  numLabHours: number;
+  numLecHours: number;
+  preferedWeekDay: string;
+  preferedTime: string;
+  capacity: number;
+  classType: string;
+  instructors: string;
   status?: Status;
   createdBy?: string;
   updatedBy?: string;
@@ -24,6 +29,29 @@ const subjectSchema: Schema<SubjectDocument> = new Schema(
     department: {
       type: String,
       required: true,
+    },
+    numLabHours: {
+      type: Number,
+    },
+    numLecHours: {
+      type: Number,
+    },
+    preferedWeekDay: {
+      type: String,
+    },
+    preferedTime: {
+      type: String,
+    },
+    capacity: {
+      type: Number,
+    },
+    instructors: {
+      type: String,
+    },
+    classType: {
+      type: String,
+      default: ClassType.LEC,
+      index: true,
     },
     status: {
       type: String,

@@ -11,7 +11,6 @@ const room_controller_1 = __importDefault(require("./room/room.controller"));
 const subject_controller_1 = __importDefault(require("./subject/subject.controller"));
 const user_controller_1 = __importDefault(require("./user/user.controller"));
 const enrollment_controller_1 = __importDefault(require("./enrollment/enrollment.controller"));
-const newSubject_controller_1 = __importDefault(require("./new_subject/newSubject.controller"));
 const student_controller_1 = __importDefault(require("./student/student.controller"));
 const routes = [
     ...ping_controller_1.default,
@@ -21,7 +20,6 @@ const routes = [
     ...subject_controller_1.default,
     ...sheet_controller_1.default,
     ...enrollment_controller_1.default,
-    ...newSubject_controller_1.default,
     ...student_controller_1.default,
 ];
 exports.routes = routes;
