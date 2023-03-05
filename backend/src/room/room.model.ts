@@ -6,6 +6,7 @@ export interface IRoom {
   label: string;
   status?: Status;
   capacity: number;
+  classType: string;
   createdBy?: string;
   updatedBy?: string;
 }
@@ -30,6 +31,11 @@ const roomSchema: Schema<RoomDocument> = new Schema(
     capacity: {
       type: Number,
       default: -1,
+    },
+    classType: {
+      type: String,
+      default: ClassType.LEC,
+      index: true,
     },
     createdBy: {
       type: String,
