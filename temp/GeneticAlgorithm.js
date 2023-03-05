@@ -7,9 +7,10 @@ const randInt = (from, to) => {
 };
 exports.randInt = randInt;
 class Entity {
-    constructor(length, geneCount = 2, chromosome = []) {
+    constructor({ length, geneCount, chromosome = [], calcFitness, }) {
         this.chromosome = [];
         this.mutate = (chance) => {
+            let isMutated = 0;
             for (let i = 0; i < this.length; ++i) {
                 if (Math.random() < chance) {
                     let mutatedGene = (0, exports.randInt)(0, this.geneCount - 1);
@@ -17,27 +18,33 @@ class Entity {
                         mutatedGene += 1;
                     }
                     this.chromosome[i] = mutatedGene;
+                    isMutated++;
                 }
+            }
+            if (isMutated > 0) {
+                this.fitness = this.calcFitness(this);
             }
         };
         this.geneCount = geneCount;
-        this.length = length;
+        this.length = length ? length : chromosome.length;
+        this.calcFitness = calcFitness;
         // Random init if no chromosome specified
         if (chromosome.length == 0) {
-            for (let i = 0; i < length; ++i) {
+            for (let i = 0; i < this.length; ++i) {
                 this.chromosome.push((0, exports.randInt)(0, geneCount));
             }
         }
         else {
             this.chromosome = chromosome;
         }
+        this.fitness = calcFitness(this);
     }
 }
 exports.Entity = Entity;
 class GeneticAlgorithm {
+    // private notableEntities: Entity[] = [];
     constructor() {
         this.population = [];
-        this.notableEntities = [];
         /**
          * Configurate genetic algorithm's attributes
          *
@@ -61,7 +68,7 @@ class GeneticAlgorithm {
          *      - A number from 0 to 1
          * @param {Entity[]} [initialPopulation] - Population to start with
          */
-        this.configurate = ({ chromosomeLength = this.chromosomeLength, geneCount = this.geneCount, generation = this.generation || 50, mutationRate = this.mutationRate || 0.01, maxPopulationSize = this.maxPopulationSize || 50, fitness = this.fitness, selection = this.customSelectParents, crossover = this.customCrossover, eliteRate = isNaN(this.eliteRate) ? 0.5 : this.eliteRate, initialPopulation = [] }) => {
+        this.configurate = ({ chromosomeLength = this.chromosomeLength, geneCount = this.geneCount, generation = this.generation || 50, mutationRate = this.mutationRate || 0.01, maxPopulationSize = this.maxPopulationSize || 50, fitness = this.fitness, selection = this.customSelectParents, crossover = this.customCrossover, eliteRate = isNaN(this.eliteRate) ? 0.2 : this.eliteRate, initialPopulation = [] }) => {
             this.chromosomeLength = chromosomeLength;
             this.geneCount = geneCount;
             this.generation = generation;
@@ -80,28 +87,22 @@ class GeneticAlgorithm {
          */
         this.run = () => {
             var _a;
-            // Generate population
-            this.spawnPopulation();
-            this.calculateFitness();
             // Main loop
-            let loop = this.generation;
-            while (loop--) {
-                // Testing code
-                console.log('\rGeneration', this.generation - loop);
-                // Calculate fitness of the population
+            let loop = Math.max(1, this.generation);
+            while (true) {
+                // Generate population
+                this.spawnPopulation();
                 // Early stopping condition satisfied?
-                if ((_a = this.earlyStop) === null || _a === void 0 ? void 0 : _a.call(this, this.population)) {
+                if (loop <= 0 || ((_a = this.earlyStop) === null || _a === void 0 ? void 0 : _a.call(this, this.population))) {
                     break;
                 }
                 // Selection
                 const parentPool = this.selectParents();
                 // Crossover (breeding) with mutation
                 this.crossoverSelection(parentPool);
-                this.calculateFitness();
                 // Control population size
                 this.purgePopulation();
-                this.spawnPopulation();
-                this.calculateFitness();
+                loop--;
             }
             return this.population;
         };
@@ -110,17 +111,12 @@ class GeneticAlgorithm {
          */
         this.spawnPopulation = () => {
             for (let i = this.population.length; i < this.maxPopulationSize; ++i) {
-                this.population.push(new Entity(this.chromosomeLength, this.geneCount));
+                this.population.push(new Entity({
+                    length: this.chromosomeLength,
+                    geneCount: this.geneCount,
+                    calcFitness: this.fitness
+                }));
             }
-        };
-        /**
-         * Calculate fitness score for whole population. Higher score means better fitness
-         */
-        this.calculateFitness = () => {
-            // Update fitness score for each entity
-            this.population.forEach((entity, index) => {
-                this.population[index].fitness = this.fitness(entity);
-            });
         };
         /**
          * Determines which entity should take part in crossover process.
@@ -196,8 +192,16 @@ class GeneticAlgorithm {
                 secondChild = second.chromosome.slice(0, crossPoint);
                 firstChild.push(...second.chromosome.slice(crossPoint));
                 secondChild.push(...first.chromosome.slice(crossPoint));
-                firstChild = new Entity(length, this.geneCount, firstChild);
-                secondChild = new Entity(length, this.geneCount, secondChild);
+                firstChild = new Entity({
+                    geneCount: this.geneCount,
+                    chromosome: firstChild,
+                    calcFitness: this.fitness,
+                });
+                secondChild = new Entity({
+                    geneCount: this.geneCount,
+                    chromosome: secondChild,
+                    calcFitness: this.fitness,
+                });
             }
             firstChild.mutate(this.mutationRate);
             secondChild.mutate(this.mutationRate);
@@ -213,6 +217,9 @@ class GeneticAlgorithm {
             const eliteCount = Math.floor(this.maxPopulationSize * this.eliteRate);
             this.population.splice(eliteCount);
         };
+    }
+    get currentPopulation() {
+        return this.population;
     }
 }
 exports.GeneticAlgorithm = GeneticAlgorithm;
