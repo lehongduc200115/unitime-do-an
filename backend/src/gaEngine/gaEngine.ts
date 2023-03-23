@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
+import { ICoord } from "./type";
 
 /**
  * Genetic Algorithm chromosome result: 0, 1, 2, 3, 4, 5, 6, 7...
@@ -46,8 +47,8 @@ import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
  * length2 * maxLength
  */
 
-class Coord {
-    building: string[] = ["B1", "B2"];
+class Coord implements ICoord {
+    building: any = ["B1", "B2"];
     value: number = 0;
     constructor(label: string) {
         let coord = label.split("-");
@@ -55,13 +56,13 @@ class Coord {
         if (coord[0][0] == "H") {
             value += 100000 + (parseInt(coord[0][1]) - 1) * 1000;
         } else {
-            value += this.building.findIndex((x) => x == coord[0]) * 1000;
+            value += this.building.findIndex((x: any) => x == coord[0]) * 1000;
         }
         value += parseInt(coord[1]);
         this.value = value;
     }
 
-    distanceTo(point: Coord) {
+    distanceTo(point: ICoord) {
         let dist = Math.abs(this.value - point.value);
         return dist >= 100000 ? 2 : 0;
     }
@@ -86,6 +87,7 @@ class EngineInput {
         let timetableInput: any[] = [];
         let instructorInput: any[] = [];
         let enrollmentInput: any[] = [];
+        let newClassInput: any[] = [];
 
         input.forEach((item: any) => {
             switch (item.data.sheetName) {
@@ -112,6 +114,10 @@ class EngineInput {
                     timetableInput = item.data.rows;
                     break;
                 }
+                case "NewClass": {
+                    newClassInput = item.data.rows;
+                    break;
+                }
                 default: {
                     // Undefined sheet
                     break;
@@ -125,48 +131,21 @@ class EngineInput {
         this.convertInstructor(instructorInput);
         this.convertEnrollment(enrollmentInput);
 
-        this.convertClasses();
+        this.convertClasses(newClassInput);
         this.convertSlot();
     }
 
-    private convertClasses() {
-        const originClassCount = this.timetable.length;
-
-        this.enrollment.forEach((item: any) => {
-            // TODO: Divide classes base on student count (open new class or change room of old class)
-            let lecClassCount = item.students.length / item.lecCapacity;
-            if (lecClassCount < 0.5) {
-                lecClassCount = 0;
-            } else {
-                lecClassCount = Math.ceil(lecClassCount);
+    private convertClasses(input: any[]) {
+        input.forEach((item: any, index: number) => {
+            const obj = {
+                id: index,
+                type: item.type,
+                period: parseInt(item.period),
+                capacity: parseInt(item.lecCapacity),
+                instructors: this.subject[item.subjectId].instructors,
             }
-            let labClassCount =
-                lecClassCount == 0
-                    ? 0
-                    : Math.ceil(item.students.length / item.labCapacity);
-            // Assign classes to be added
-            let newClassId = originClassCount;
-            for (let i = 0; i < lecClassCount; ++i) {
-                const obj = {
-                    id: newClassId++,
-                    type: "lec",
-                    period: parseInt(item.numLecHours),
-                    capacity: item.lecCapacity,
-                    instructors: item.instructors,
-                };
-                this.classes.push(obj);
-            }
-            for (let i = 0; i < labClassCount; ++i) {
-                const obj = {
-                    id: newClassId++,
-                    type: item.labType,
-                    period: parseInt(item.numLabHours),
-                    capacity: item.labCapacity,
-                    instructors: item.instructors,
-                };
-                this.classes.push(obj);
-            }
-        });
+            this.classes.push(obj);
+        })
     }
 
     private convertEnrollment(input: any[]) {
@@ -227,17 +206,6 @@ class EngineInput {
         });
     }
 
-    // engineInput.availableRoomSlot = [
-    //     {
-    //         id: 0, // refer to room id
-    //         type: 'lec',
-    //         capacity: 4,
-    //         // Additional info for engine
-    //         weekday: 0, // Monday -> Sunday == 0 -> 6
-    //         time: [7, 12],
-    //         coord: new Coord("H1-101"),
-    //     }
-    // ]
     private convertSlot() {
         // NOTED: May need a future rework here
         // Remove unused information and add timeSlot attribute in order to split room into available slots
@@ -355,8 +323,45 @@ class EngineInput {
         });
     }
 }
+let engineInput: EngineInput;
 
-let engineInput: any;
+class EngineOutput {
+    result: any[] = [];
+
+    constructor(engineInput: EngineInput, engineOutput: Entity[]) {
+        const totalFreeSlot = engineInput.availableRoomSlot.length;
+        const topCount = 10;
+        for (let i = 0; i < topCount; ++i) {
+            const chromosome = engineOutput[i].chromosome;
+            let suggestionResult = {
+                point: engineOutput[i].fitness,
+                classes: new Array(),
+            }
+
+            let classId = engineInput.timetable.length;
+        
+            chromosome.forEach((value: any, newClassId: number) => {
+                const slotId = value % totalFreeSlot;
+                const instructorId = Math.floor(value / totalFreeSlot);
+
+                const obj = {
+                    id: classId++,
+                    // name: engineInput.classes;
+                    subjectId: engineInput.classes[newClassId].subjectId,
+                    instructor: engineInput.instructor[instructorId],
+                    roomId: engineInput.room[engineInput.availableRoomSlot[slotId]],
+                    weekDay: engineInput.availableRoomSlot[slotId].weekday,
+                    startTime: engineInput.availableRoomSlot[slotId].time[0],
+                    endTime: engineInput.availableRoomSlot[slotId].time[1],
+                }
+                suggestionResult.classes.push(obj);
+            });
+
+            this.result.push(suggestionResult);
+        };
+    }
+}
+
 
 const fitness = (entity: Entity) => {
     let score = 0;
@@ -451,7 +456,9 @@ export const engine = (input: any) => {
 
     let res = engine.run();
 
+    let engineOutput = new EngineOutput(engineInput, res);
+
     return {
-        result: res,
+        result: engineOutput.result,
     };
 };
