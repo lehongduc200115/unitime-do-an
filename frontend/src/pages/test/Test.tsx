@@ -5,6 +5,7 @@ import { IReaderResult } from '../../helpers/helpers';
 import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
 import { VisualizePanel } from './VisualizePanel/VisualizePanel';
+import { VisualizeResultPanel } from './VisualizeResultPanel/VisualizeResultPanel';
 
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
@@ -62,6 +63,7 @@ const backendSolver = async (importedData: any) => {
   console.log(`ret: ${JSON.stringify(ret)}`)
   return ret;
 }
+
 
 export default function Test() {
   async function handleOnChange(e: any) {
@@ -133,7 +135,12 @@ export default function Test() {
     <p>fetch goes here: <button onClick={handleOnClickFetch}>fetch</button></p>
 
     <p>result fetch goes here: {JSON.stringify(fetchResult)}</p> */}
-    <p>visualizedParsedData goes here: {JSON.stringify(visualizedParsedData)}</p>
+    {
+      (backendResponse && backendResponse.data && backendResponse.data.status === "success")
+      ? (<VisualizeResultPanel visualizeData={backendResponse.data.data.result}/>)
+      : ""
+    }
+    
     <VisualizePanel visualizeData={() => visualizedParsedData}></VisualizePanel>
     {/* <Spreadsheet data={[data["class"]] as any || []}></Spreadsheet> */}
     <p>sheetname: {sheetNames}</p>
