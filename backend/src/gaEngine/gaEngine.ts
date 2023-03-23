@@ -70,53 +70,48 @@ class Coord {
 
 class EngineInput {
     // Data
-    subject: any[] = []; // Subject information
-    timetable: any[] = []; // List of classes in origin timetable
-    room: any[] = []; // List of rooms
-    availableRoomSlot: any[] = []; // Each item represents info of rooms' available slots (available time, which weekday, which room)
-    instructor: any[] = []; // Each item represent instructors' info (availability for each room slot)
-    enrollment: any[] = []; // Enrollment list, each index represent class id
-    classes: any[] = []; // Classes to be added to timetable
+    public subject: any[] = []; // Subject information
+    public timetable: any[] = []; // List of classes in origin timetable
+    public room: any[] = []; // List of rooms
+    public availableRoomSlot: any[] = []; // Each item represents info of rooms' available slots (available time, which weekday, which room)
+    public instructor: any[] = []; // Each item represent instructors' info (availability for each room slot)
+    public enrollment: any[] = []; // Enrollment list, each index represent class id
+    public classes: any[] = []; // Classes to be added to timetable
 
     // Unused yet
     studentTimetable: any[] = []; // List of student in each class
     
-    constructor(input: any[]) {
+    public constructor(input: any[]) {
         let subjectInput: any[] = [];
         let roomInput: any[] = [];
         let timetableInput: any[] = [];
         let instructorInput: any[] = [];
         let enrollmentInput: any[] = [];
-        let classesInput: any[] = [];
 
 
         input.forEach((item: any) => {
-            switch (item.sheetName) {
+            switch (item.data.sheetName) {
                 case "Subject": {
-                    subjectInput.push(item);
+                    subjectInput = item.data.rows;
                     break;
                 }
                 case "Room": {
-                    roomInput.push(item);
+                    roomInput = item.data.rows;
                     break;
                 }
                 case "Instructor": {
-                    instructorInput.push(item);
+                    instructorInput = item.data.rows;
                     break;
                 }
                 case "Student": {
                     break;
                 }
                 case "Enrollment": {
-                    enrollmentInput.push(item);
+                    enrollmentInput = item.data.rows;
                     break;
                 }
                 case "Class": {
-                    timetableInput.push(item);
-                    break;
-                }
-                case "NewSubject": {
-                    classesInput.push(item);
+                    timetableInput = item.data.rows;
                     break;
                 }
                 default: {
@@ -129,8 +124,188 @@ class EngineInput {
         this.convertSubject(subjectInput);
         this.convertTimetable(timetableInput);
         this.convertRoom(roomInput);
+        this.convertInstructor(instructorInput);
         this.convertEnrollment(enrollmentInput);
+
         this.convertClasses();
+        this.convertSlot();
+    }
+
+    private convertClasses() {
+        const originClassCount = this.timetable.length;
+
+        this.enrollment.forEach((item: any) => {
+            // Divide classes base on student count
+            let lecClassCount = item.students.length / item.lecCapacity;
+            if (lecClassCount < 0.5) {
+                lecClassCount = 0;
+            } else {
+                lecClassCount = Math.ceil(lecClassCount);
+            }
+            let labClassCount = lecClassCount == 0 ? 0 : Math.ceil(item.students.length / item.labCapacity);
+            // Assign classes to be added
+            let newClassId = originClassCount;
+            for (let i = 0; i < lecClassCount; ++i) {
+                const obj = {
+                    id: newClassId++,
+                    type: "lec",
+                    period: item.numLecHours,
+                    capacity: item.lecCapacity,
+                    instructors: item.instructors,
+                }
+                this.classes.push(obj);
+            }
+            for (let i = 0; i < labClassCount; ++i) {
+                const obj = {
+                    id: newClassId++,
+                    type: item.labType,
+                    period: item.numLabHours,
+                    capacity: item.labCapacity,
+                    instructors: item.instructors,
+                }
+                this.classes.push(obj);
+            }
+        });
+    }
+
+    private convertEnrollment(input: any[]) { // IEnrollment[]
+        const originClassCount = this.timetable.length;
+        let currId = -1;
+
+        input.forEach((item: any) => {
+            if (item.classId !== undefined) {
+                if (item.classId != currId) { // Iterate to next class
+                    currId = item.classId;
+                    this.studentTimetable.push([]);
+                }
+                this.studentTimetable[item.classId].push(item.studentId);
+            } else {
+                if (item.subjectId != currId) { // Iterate to next new subject
+                    currId = item.subjectId;
+                    // Store enrolled student first, then divide classes later
+                    const obj = {
+                        numLecHours: this.subject[item.subjectId].numLecHours,
+                        numLabHours: this.subject[item.subjectId].numLabHours,
+                        lecCapacity: this.subject[item.subjectId].lecCapacity,
+                        labCapacity: this.subject[item.subjectId].labCapacity,
+                        labType: this.subject[item.subjectId].labType,
+                        instructors: this.subject[item.subjectId].instructors,
+                        students: [item.studentId]
+                    }
+                    this.enrollment.push(obj);
+                } else {
+                    this.enrollment[this.enrollment.length - 1].students.push(item.studentId);
+                }
+            }
+        });
+    }
+
+    private convertInstructor(input: any[]) { // IInstructor[]
+        input.forEach((item: any, i: number) => {
+            const obj = {
+                id: i,
+                name: item.name,
+                department: item.department
+            }
+            this.instructor.push(obj);
+        });
+    }
+
+    private convertRoom(input: any[]) { // IRoom[]
+        input.forEach((item: any, i: number) => {
+            const obj = {
+                id: i,
+                label: item.label,
+                type: item.type,
+                capacity: item.capacity,
+                coord: new Coord(item.label),
+            }
+            this.room.push(obj);
+        });
+    }
+
+// engineInput.availableRoomSlot = [
+//     {
+//         id: 0, // refer to room id
+//         type: 'lec',
+//         capacity: 4,
+//         // Additional info for engine
+//         weekday: 0, // Monday -> Sunday == 0 -> 6
+//         time: [7, 12],
+//         coord: new Coord("H1-101"),
+//     }
+// ]
+    private convertSlot() {
+        // NOTED: May need a future rework here
+        // Remove unused information and add timeSlot attribute in order to split room into available slots
+        let tempSlots: any[] = [];
+        this.room.forEach((item: any) => {
+            const obj = {
+                id: item.id,
+                type: item.type,
+                capacity: item.capacity,
+                timeSlot: [...Array(7).keys()].map((item: number) => {
+                    return {
+                        weekday: item,
+                        time: [7,18],
+                    }
+                }),
+                coord: item.coord,
+            }
+            tempSlots.push(obj);
+        });
+        // Sieve available slot
+        this.timetable.forEach((classItem: any) => {
+            const maxI = tempSlots[classItem.weekday].timeSlot.length;
+            for (let i = 0; i < maxI; ++i) {
+                let timeSlotItem = tempSlots[classItem.weekday].timeSlot[i];
+                // Slot is not occupied
+                if (classItem.weekday != timeSlotItem.weekday) {
+                    continue;
+                }
+                if (classItem.time[1] <= timeSlotItem.time[0] || timeSlotItem.time[1] <= classItem.time[0]) {
+                    continue;
+                }
+                // Find split point from occupied slot
+                let split1: any = timeSlotItem.time[1];
+                let split2: any = timeSlotItem.time[0];
+                if (timeSlotItem.time[0] < classItem.time[0]) {
+                    split1 = classItem.time[0];
+                }
+                if (classItem.time[1] < timeSlotItem.time[1]) {
+                    split2 = classItem.time[1];
+                }
+                // Split slot and replace occupied one
+                if (timeSlotItem.time[0] < split1) {
+                    split1 = {
+                        weekday: timeSlotItem.weekday,
+                        time: [timeSlotItem.time[0], split1]
+                    }
+                }
+                if (split2 < timeSlotItem.time[1]) {
+                    split2 = {
+                        weekday: timeSlotItem.weekday,
+                        time: [split2, timeSlotItem.time[1]]
+                    }
+                }
+                tempSlots[classItem.weekday].timeSlot.splice(i, 1, split1, split2);
+                break;
+            }
+        });
+        // Convert to availableRoomSlot
+        tempSlots.forEach((item: any) => {
+            item.timeSlot.forEach((timeSlotItem: any) => {
+                const obj = {
+                    id: item.id,
+                    type: item.type,
+                    capacity: item.capacity,
+                    weekday: timeSlotItem.weekday,
+                    time: timeSlotItem.time,
+                    coord: item.coord
+                }
+                this.availableRoomSlot.push(obj);
+            });
+        });
     }
 
     private convertSubject(input: any[]) {
@@ -138,7 +313,7 @@ class EngineInput {
         // - Change CLASS_TYPE in Excel to LAB_TYPE
         // - Split CAPACITY in Excel to LEC_CAPACITY and LAB_CAPACITY
         input.forEach((item: any, i: number) => {
-            let res = {
+            const obj = {
                 id: i,
                 name: item.name,
                 department: item.department,
@@ -149,183 +324,44 @@ class EngineInput {
                 lecCapacity: item.lecCapacity,
                 labCapacity: item.labCapacity,
                 labType: item.labType,
-                instructors: item.instructors.split(",").map((ele: any) => parseInt(ele))
+                instructors: item.instructors.toString().split(",").map((ele: any) => parseInt(ele))
             }
-            this.subject.push(res);
+            this.subject.push(obj);
         });
     }
 
     private convertTimetable(input: any[]) { // IClass[]
         input.forEach((item: any, i: number) => {
-            let res = {
+            const obj = {
                 id: i,
                 name: item.name,
                 subjectId: item.subjectId,
-                weekDay: item.weekDay,
+                weekday: item.weekDay,
                 time: [item.startTime, item.endTime], 
                 roomId: item.roomId,
                 instructorId: item.instructorId,
             }
-            this.timetable.push(res);
-        });
-    }
-
-    private convertRoom(input: any[]) { // IRoom[]
-        input.forEach((item: any, i: number) => {
-            let res = {
-                id: i,
-                label: item.label,
-                type: item.type,
-                capacity: item.capacity,
-                coord: new Coord(item.label),
-            }
-            this.room.push(res);
-        });
-    }
-
-    private convertEnrollment(input: any[]) { // IEnrollment[]
-        const originClassCount = this.timetable.length;
-        let currClassId = -1;
-
-        input.forEach((item: any) => {
-            if (item.classId < originClassCount) {
-                if (item.classId != currClassId) { // Iterate to next class
-                    currClassId = item.classId;
-                    this.studentTimetable.push([]);
-                }
-                this.studentTimetable[item.classId].push(item.studentId);
-            } else {
-                if (item.classId != currClassId) { // Iterate to next new subject
-                    currClassId = item.classId;
-                    // Store enrolled student first, then divide classes later
-                    let res = {
-                        numLecHours: this.subject[item.subjectId].numLecHours,
-                        numLabHours: this.subject[item.subjectId].numLabHours,
-                        lecCapacity: this.subject[item.subjectId].lecCapacity,
-                        labCapacity: this.subject[item.subjectId].labCapacity,
-                        labType: this.subject[item.subjectId].labType,
-                        instructors: this.subject[item.subjectId].instructors,
-                        students: [item.studentId]
-                    }
-                    this.enrollment.push(res);
-                } else {
-                    this.enrollment[-1].students.push(item.studentId);
-                }
-            }
-        });
-    }
-
-    private convertClasses() {
-        const originClassCount = this.timetable.length;
-        this.enrollment.forEach((item: any) => {
-            // TODO: divide classes base on student count
-            const lecClassCount = item.lecClassCount;
-            const labClassCount = item.labClassCount;
-            let newClassId = originClassCount;
-            for (let i = 0; i < lecClassCount; ++i) {
-                let res = {
-                    id: newClassId++,
-                    type: "lec",
-                    period: item.numLecHours,
-                    capacity: item.lecCapacity,
-                    instructors: item.instructors,
-                }
-                this.classes.push(res);
-            }
-            for (let i = 0; i < labClassCount; ++i) {
-                let res = {
-                    id: newClassId++,
-                    type: item.labType,
-                    period: item.numLabHours,
-                    capacity: item.labCapacity,
-                    instructors: item.instructors,
-                }
-                this.classes.push(res);
-            }
+            this.timetable.push(obj);
         });
     }
 }
 
-let engineInput: EngineInput;
-// engineInput.timetable = [
-//     {
-//         id: 0,
-//         name: 'L01',
-//         subject: 'Physic 1',
-//         weekday: 'Monday',
-//         time: [12, 14], // 12h to 14h
-//         roomId: 0,
-//         lecturerId: 2,
-//     }
-// ]
-// engineInput.room = [
-//     {
-//         id: 0,
-//         name: 'H1-101',
-//         type: 'lec',
-//         capacity: 4,
-//         coord: new Coord("H1-101"),
-//     }
-// ]
-// engineInput.availableRoomSlot = [
-//     {
-//         id: 0, // refer to room id
-//         type: 'lec',
-//         capacity: 4,
-//         // Additional info for engine
-//         time: [7, 12],
-//         coord: new Coord("H1-101"),
-//     }
-// ]
-// engineInput.instructor = [
-//     {
-//         id: 0, // refer to instructor id
-//         // Additional for engine
-//         4 [{}, {}, {}, {}]
-//         slotAvailability: [ // represents availability time of instructor per slot id
-//             {
-//                 time: [12, 14],
-//                 proximateClass: 0, // represent classId contains main zone where instructor teaches
-//             }
-//         ],
-//     }
-// ]
-// engineInput.classes = [
-//     {
-//         id: 11, // n+1 , represent new class ID after appended to timetable
-//         type: "lec",
-//         period: 2,
-//         enroll: 4,
-//         instructor: [0, 1] // id of instructor who can teach this class
-//     }
-// ]
-// engineInput.studentTimetable = [
-//     {
-
-//     }
-// ]
+let engineInput: any;
 
 const fitness = (entity: Entity) => {
     let score = 0;
 
-    // Cloning data to check constraints
-    let availableRoomSlot = engineInput.availableRoomSlot.map(e => ({...e})); // Clone of available room slot
-    let instructor = engineInput.instructor.map(e => ({...e}));
-
-    // TODO
-    // - Clone EngineInput data
-    let availableSlotCount: number = engineInput.availableRoomSlot.length;
-    // - Assign chromosome to clone data
-    let appendedSlot = Array(availableSlotCount).fill([]); // Newly successful appended class (each array represents available slot and contains class index)
+    // Cloning data
+    let availableRoomSlot = engineInput.availableRoomSlot.map((e: any) => ({...e})); // Clone of available room slot
+    let instructor = engineInput.instructor.map((e: any) => ({...e})); // Clone of instructors
 
     const totalFreeSlot = 9; // EngineInput availableRoomSlot length
     entity.chromosome.forEach((value: number, newClassIndex: number) => {
         const slotId = value % totalFreeSlot;
         const instructorId = Math.floor(value / totalFreeSlot);
 
-
         // Check for appropritate instructor (instructor - class)
-        if (engineInput.classes[newClassIndex].instructor.indexOf(instructorId) < 0) {
+        if (instructorId >= engineInput.classes[newClassIndex].instructors.length) {
             return;
         }
         // Check for valid slot (class - room)
@@ -339,7 +375,7 @@ const fitness = (entity: Entity) => {
            return; 
         }
         // Capacity availability
-        if (availableRoomSlot[slotId].capacity < engineInput.classes[newClassIndex].enroll) {
+        if (availableRoomSlot[slotId].capacity < engineInput.classes[newClassIndex].capacity) {
             return;
         }
 
@@ -354,7 +390,6 @@ const fitness = (entity: Entity) => {
         // TODO: Check for student count
 
         // Satisfied all hard constraints
-        appendedSlot[slotId].push(newClassIndex);
         instructor[instructorId].slotAvailability[slotId].time[0] += engineInput.classes[newClassIndex].period;
         availableRoomSlot[slotId].time[0] += engineInput.classes[newClassIndex].period;
         score += 1;
@@ -366,13 +401,19 @@ const fitness = (entity: Entity) => {
 // Test
 export const engine = (input: any) => {
     engineInput = new EngineInput(input);
+    let geneCount = 0;
+    engineInput.classes.forEach((item: any) => {
+        geneCount = Math.max(geneCount, item.instructors.length);
+    });
+    geneCount = geneCount * engineInput.availableRoomSlot.length
+
     let engine = new GeneticAlgorithm();
     engine.configurate({
-        chromosomeLength: 10,
-        geneCount: 10,
-        generation: 100,
+        chromosomeLength: engineInput.classes.length,
+        geneCount: geneCount,
+        generation: 1000,
         mutationRate: 0.01,
-        maxPopulationSize: 100,
+        maxPopulationSize: 500,
         fitness: fitness,
         eliteRate: 0.1,
         // initialPopulation: [
