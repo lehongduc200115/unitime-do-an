@@ -5,6 +5,7 @@ import { IInstructor } from "../instructor/instructor.model";
 import { ISubject } from "../subject/subject.model";
 import { IRoom } from "../room/room.model";
 import { IStudent } from "../student/student.model";
+import { INewClass } from "../new-class/newClass.model";
 
 interface IRow {
   rows:
@@ -14,7 +15,9 @@ interface IRow {
     | IStudent
     | IEnrollment
     | IClass
-    | ISubject;
+    | ISubject
+    | INewClass
+    ;
   sheetName: string;
 }
 
