@@ -2,11 +2,11 @@ import axios from 'axios';
 import * as React from 'react';
 import helpers from 'src/helpers/helpers';
 import { IReaderResult } from '../../helpers/helpers';
-import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
 import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
+import { VisualizePanel } from './VisualizePanel/VisualizePanel';
 
-const visualizeData = async (importedData: IImportedData) => {
+const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
   let sheets: any = helpers.getHeadersFromSchema();
   Object.keys(sheets).forEach((key: string) => {
@@ -40,6 +40,14 @@ const visualizeData = async (importedData: IImportedData) => {
   })
 
   console.log(`sheet: ${JSON.stringify(sheets)}`)
+
+  return {
+    sheets,
+    importedData
+  };
+}
+
+const backendSolver = async (importedData: any) => {
   const ret = await axios.post(`http://localhost:8000/import`, {
     data: importedData.map((it: any) => {
       return {
@@ -52,64 +60,68 @@ const visualizeData = async (importedData: IImportedData) => {
   })
 
   console.log(`ret: ${JSON.stringify(ret)}`)
-
-  return sheets;
+  return ret;
 }
 
 export default function Test() {
   async function handleOnChange(e: any) {
-    const res = await helpers.xlsxToJson(e.target.files[0])
-    const sheetNames = await helpers.getSheetNames(e.target.files[0])
-    setSheetNames(sheetNames)
-    setResult(res)
-    setDataa(visualizeData(res));
+    const res = await helpers.xlsxToJson(e.target.files[0]);
+    const sheetNames = await helpers.getSheetNames(e.target.files[0]);
+    const dataVisualized = visualizeData(res);
+    setSheetNames(sheetNames);
+    setResult(res);
+    console.log(`stuck: ${JSON.stringify(dataVisualized.sheets)}`)
+    setVisualizedParsedData(dataVisualized.sheets);
+    setBackendresponse(await backendSolver(dataVisualized.importedData));
   }
-  async function handleOnClick(e: any) {
-    const obj: Record<string, any> = {}
-    result.forEach(async it => {
-      try {
-        console.log(`request: localhost:8000/${it.sheetName.toLowerCase()}`)
-        console.log(`body: ${JSON.stringify(it.rows)}`)
-        const result = await axios({
-          method: 'post',
-          url: `http://localhost:8000/${it.sheetName.toLowerCase()}`,
-          data: it.rows
-        })
-        obj[it.sheetName.toLowerCase()] = { result, error: false };
-      } catch (e) {
-        console.log(e)
-        obj[it.sheetName.toLowerCase()] = { result: null, error: true };
-      }
-    })
-    setImportResult(obj);
-  }
+  // async function handleOnClick(e: any) {
+  //   const obj: Record<string, any> = {}
+  //   result.forEach(async it => {
+  //     try {
+  //       console.log(`request: localhost:8000/${it.sheetName.toLowerCase()}`)
+  //       console.log(`body: ${JSON.stringify(it.rows)}`)
+  //       const result = await axios({
+  //         method: 'post',
+  //         url: `http://localhost:8000/${it.sheetName.toLowerCase()}`,
+  //         data: it.rows
+  //       })
+  //       obj[it.sheetName.toLowerCase()] = { result, error: false };
+  //     } catch (e) {
+  //       console.log(e)
+  //       obj[it.sheetName.toLowerCase()] = { result: null, error: true };
+  //     }
+  //   })
+  //   setImportResult(obj);
+  // }
 
-  async function handleOnClickFetch() {
-    const obj: Record<string, any> = {};
-    const sheet = [{ sheetName: "subject" }, { sheetName: "room" }, { sheetName: "instructor" }]
-    sheet.forEach(async it => {
-      try {
-        const result = await axios.get(`http://localhost:8000/${it.sheetName.toLowerCase()}`)
-        obj[it.sheetName.toLowerCase()] = { result, error: false };
-      } catch (e) {
-        console.log(e)
-        obj[it.sheetName.toLowerCase()] = { result: null, error: true };
-      }
-    })
-    setFetchResult(obj);
-  }
+  // async function handleOnClickFetch() {
+  //   const obj: Record<string, any> = {};
+  //   const sheet = [{ sheetName: "subject" }, { sheetName: "room" }, { sheetName: "instructor" }]
+  //   sheet.forEach(async it => {
+  //     try {
+  //       const result = await axios.get(`http://localhost:8000/${it.sheetName.toLowerCase()}`)
+  //       obj[it.sheetName.toLowerCase()] = { result, error: false };
+  //     } catch (e) {
+  //       console.log(e)
+  //       obj[it.sheetName.toLowerCase()] = { result: null, error: true };
+  //     }
+  //   })
+  //   setFetchResult(obj);
+  // }
 
 
   const [result, setResult] = React.useState<IReaderResult[]>([])
-  const [data, setDataa] = React.useState<any>([])
+  const [visualizedParsedData, setVisualizedParsedData] = React.useState<any>([])
   const [sheetNames, setSheetNames] = React.useState<any>([])
-  const [importResult, setImportResult] = React.useState(null)
-  const [fetchResult, setFetchResult] = React.useState(null)
+  const [backendResponse, setBackendresponse] = React.useState<any>([])
+  // const [importResult, setImportResult] = React.useState(null)
+  // const [fetchResult, setFetchResult] = React.useState(null)
   return <div>
     input file here: <input type="file" id="input" onChange={handleOnChange} />
 
     <p>result goes here: {JSON.stringify(result)}</p>
-    <br />
+    <p>beResponse goes here: {JSON.stringify(backendResponse)}</p>
+    {/* <br />
     <br />
     <br />
     <p>import goes here: <button onClick={handleOnClick}>import</button></p>
@@ -120,14 +132,9 @@ export default function Test() {
     <br />
     <p>fetch goes here: <button onClick={handleOnClickFetch}>fetch</button></p>
 
-    <p>result fetch goes here: {JSON.stringify(fetchResult)}</p>
-    {Object.keys(data).map((it) => {
-      // console.log(Object.keys(data))
-      return <div>
-        <Spreadsheet data={data[it] as any} />
-        <br />
-      </div>
-    })}
+    <p>result fetch goes here: {JSON.stringify(fetchResult)}</p> */}
+    <p>visualizedParsedData goes here: {JSON.stringify(visualizedParsedData)}</p>
+    <VisualizePanel visualizeData={() => visualizedParsedData}></VisualizePanel>
     {/* <Spreadsheet data={[data["class"]] as any || []}></Spreadsheet> */}
     <p>sheetname: {sheetNames}</p>
   </div>
