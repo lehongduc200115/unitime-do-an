@@ -187,6 +187,7 @@ class EngineInput {
                 id: i,
                 name: item.name,
                 department: item.department,
+                slotAvailability: new Array(),
             };
             this.instructor.push(obj);
         });
@@ -212,7 +213,7 @@ class EngineInput {
         let tempSlots: any[] = [];
         this.room.forEach((item: any) => {
             const obj = {
-                id: item.id,
+                roomId: item.id,
                 type: item.type,
                 capacity: item.capacity,
                 timeSlot: [...Array(3).keys()].map((item: number) => {
@@ -275,7 +276,7 @@ class EngineInput {
         tempSlots.forEach((item: any) => {
             item.timeSlot.forEach((timeSlotItem: any) => {
                 const obj = {
-                    id: item.id,
+                    roomId: item.roomId,
                     type: item.type,
                     capacity: item.capacity,
                     weekday: timeSlotItem.weekday,
@@ -283,13 +284,32 @@ class EngineInput {
                     coord: item.coord,
                 };
                 this.availableRoomSlot.push(obj);
+                this.instructor.forEach((_: any, index: number) => {
+                    this.instructor[index].slotAvailability.push(obj);
+                });
             });
         });
-
-        // // TODO: add instructor's slotAvailability
-        // this.timetable.forEach((item: any) => {
-
-        // });
+        // Sieve instructor's slotAvailability
+        this.timetable.forEach((item: any) => {
+            const instructorId = item.instructorId;
+            const maxI = this.availableRoomSlot.length;
+            for (let i = 0; i < maxI; ++i) {
+                const currSlot = this.instructor[instructorId].slotAvailability[i];
+                if (currSlot.weekday != item.weekday) {
+                    continue;
+                }
+                this.instructor[instructorId].slotAvailability[i].proxRoomId = item.roomId;
+                if (
+                    currSlot.time[0] >= currSlot.time[1] ||
+                    currSlot.time[0] >= item.time[1] ||
+                    currSlot.time[1] <= item.time[0]
+                ) {
+                    continue;
+                }
+                this.instructor[instructorId].slotAvailability[i].time[0] = Math.max(currSlot.time[0], item.time[1]);
+                this.instructor[instructorId].slotAvailability[i].time[0] = Math.min(currSlot.time[1], item.time[0]);
+            }
+        })
     }
 
     private convertSubject(input: any[]) {
@@ -314,10 +334,10 @@ class EngineInput {
                 id: i,
                 name: item.name,
                 subjectId: item.subjectId,
+                instructorId: item.instructorId,
+                roomId: item.roomId,
                 weekday: item.weekDay,
                 time: [item.startTime, item.endTime],
-                roomId: item.roomId,
-                instructorId: item.instructorId,
             };
             this.timetable.push(obj);
         });
@@ -349,7 +369,7 @@ class EngineOutput {
                     // name: engineInput.classes;
                     subjectId: engineInput.classes[newClassId].subjectId,
                     instructor: engineInput.instructor[instructorId],
-                    roomId: engineInput.room[engineInput.availableRoomSlot[slotId]],
+                    room: engineInput.room[engineInput.availableRoomSlot[slotId].roomId],
                     weekDay: engineInput.availableRoomSlot[slotId].weekday,
                     startTime: engineInput.availableRoomSlot[slotId].time[0],
                     endTime: engineInput.availableRoomSlot[slotId].time[1],
@@ -375,14 +395,14 @@ const fitness = (entity: Entity) => {
         const slotId = value % totalFreeSlot;
         const instructorId = Math.floor(value / totalFreeSlot);
 
-        // Check for appropritate instructor (instructor - class)
+        // Check appropritate instructor (instructor - class)
         if (
             instructorId >=
             engineInput.classes[newClassIndex].instructors.length
         ) {
             return;
         }
-        // Check for valid slot (class - room)
+        // Check valid slot (class - room)
         // Time availability
         const timeLeft =
             availableRoomSlot[slotId].time[1] -
@@ -408,21 +428,26 @@ const fitness = (entity: Entity) => {
             return;
         }
 
-        // TODO: Check for distance
-        const proxId = 0; //engineInput.instructor[instructorId].slotAvailability[slotId].proximateClass;
-        const proxRoomId = engineInput.timetable[proxId].roomId;
-        const dist = engineInput.room[proxRoomId].coord.distanceTo(
-            engineInput.availableRoomSlot[slotId].coord
-        );
-        if (dist > 0) {
+        // Check instructor time
+        if (engineInput.instructor[instructorId].slotAvailability[slotId].time[0] >= engineInput.instructor[instructorId].slotAvailability[slotId].time[1]) {
             return;
         }
+        // Check distance
+        const proxRoomId = engineInput.instructor[instructorId].slotAvailability[slotId].proxRoomId;
+        if (proxRoomId !== undefined) {
+            const dist = engineInput.room[proxRoomId].coord.distanceTo(
+                engineInput.availableRoomSlot[slotId].coord
+            );
+            if (dist > 0) {
+                return;
+            }
+        }
 
-        // TODO: Check for student count
+        // TODO: Check student count
 
         // TODO: Satisfied all hard constraints
-        // instructor[instructorId].slotAvailability[slotId].time[0] +=
-        //     engineInput.classes[newClassIndex].period;
+        instructor[instructorId].slotAvailability[slotId].time[0] +=
+            engineInput.classes[newClassIndex].period;
         availableRoomSlot[slotId].time[0] +=
             engineInput.classes[newClassIndex].period;
         score += 1;
@@ -443,7 +468,7 @@ export const engine = (input: any) => {
     engine.configurate({
         chromosomeLength: engineInput.classes.length,
         geneCount: geneCount,
-        generation: 1000,
+        generation: 100,
         mutationRate: 0.01,
         maxPopulationSize: 20,
         fitness: fitness,
