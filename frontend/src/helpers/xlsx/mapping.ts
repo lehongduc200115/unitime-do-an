@@ -37,15 +37,24 @@ export const excelSchemaMapping: Record<string, any> = {
   subject: {
     DEPARTMENT: "department",
     NAME: "name",
-    NUM_LAB_HOURS: "numLabHours",
-    NUM_LEC_HOURS: "numLecHours",
-    PREFERED_WEEKDAY: "preferedWeekDay",
-    PREFERED_TIME: "preferedTime",
-    LEC_CAPACITY: "lecCapacity",
-    LAB_CAPACITY: "labCapacity",
-    LAB_TYPE: "labType",
+    // NUM_LAB_HOURS: "numLabHours",
+    // NUM_LEC_HOURS: "numLecHours",
+    // PREFERED_WEEKDAY: "preferedWeekDay",
+    // PREFERED_TIME: "preferedTime",
+    // LEC_CAPACITY: "lecCapacity",
+    // LAB_CAPACITY: "labCapacity",
+    // LAB_TYPE: "labType",
     INSTRUCTORS: "instructors",
   },
+  newClass: {
+    ID: "id",
+    SUBJECT_ID: "subjectId",
+    TYPE: "type",
+    PREFERED_WEEKDAY: "preferedWeekDay",
+    PREFERED_TIME: "preferedTime",
+    CAPACITY: "capacity",
+    PERIOD: "period",
+  }
 };
 
 export const timetableMapping: Record<string, any> = {
@@ -55,4 +64,5 @@ export const timetableMapping: Record<string, any> = {
   student: { table: "Student" },
   enrollment: { table: "Enrollment" },
   class: { table: "Class" },
+  newClass: { table: "NewClass" },
 };
