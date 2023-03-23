@@ -141,7 +141,7 @@ class EngineInput {
                 id: index,
                 type: item.type,
                 period: parseInt(item.period),
-                capacity: parseInt(item.lecCapacity),
+                capacity: parseInt(item.capacity),
                 instructors: this.subject[item.subjectId].instructors,
             }
             this.classes.push(obj);
@@ -182,9 +182,9 @@ class EngineInput {
 
     private convertInstructor(input: any[]) {
         // IInstructor[]
-        input.forEach((item: any, i: number) => {
+        input.forEach((item: any) => {
             const obj = {
-                id: i,
+                id: item.id,
                 name: item.name,
                 department: item.department,
                 slotAvailability: new Array(),
@@ -195,9 +195,9 @@ class EngineInput {
 
     private convertRoom(input: any[]) {
         // IRoom[]
-        input.forEach((item: any, i: number) => {
+        input.forEach((item: any) => {
             const obj = {
-                id: i,
+                id: item.id,
                 label: item.label,
                 type: item.classType,
                 capacity: item.capacity,
@@ -228,11 +228,17 @@ class EngineInput {
         });
         // Sieve available slot
         this.timetable.forEach((classItem: any) => {
-            const maxI = tempSlots[classItem.roomId].timeSlot.length;
+            const slotId = tempSlots.findIndex((val: any) => {
+                return val.roomId === classItem.roomId;
+            })
+            const maxI = tempSlots[slotId].timeSlot.length;
             for (let i = 0; i < maxI; ++i) {
-                let timeSlotItem = tempSlots[classItem.roomId].timeSlot[i];
+                let timeSlotItem = tempSlots[slotId].timeSlot[i];
                 // Slot is not occupied
                 if (classItem.weekday != timeSlotItem.weekday) {
+                    continue;
+                }
+                if (classItem.roomId != tempSlots[slotId].roomId) {
                     continue;
                 }
                 if (
@@ -251,24 +257,28 @@ class EngineInput {
                     split2 = classItem.time[1];
                 }
                 // Split slot and replace occupied one
+                let split = []
                 if (timeSlotItem.time[0] < split1) {
                     split1 = {
                         weekday: timeSlotItem.weekday,
                         time: [timeSlotItem.time[0], split1],
                     };
+                    split.push(split1);
                 }
                 if (split2 < timeSlotItem.time[1]) {
                     split2 = {
                         weekday: timeSlotItem.weekday,
                         time: [split2, timeSlotItem.time[1]],
                     };
+                    split.push(split2);
                 }
-                tempSlots[classItem.roomId].timeSlot.splice(
-                    i,
-                    1,
-                    split1,
-                    split2
-                );
+                if (split.length > 0) {
+                    tempSlots[slotId].timeSlot.splice(
+                        i,
+                        1,
+                        ...split
+                    );
+                }
                 break;
             }
         });
@@ -368,12 +378,13 @@ class EngineOutput {
                     id: classId++,
                     // name: engineInput.classes;
                     subjectId: engineInput.classes[newClassId].subjectId,
-                    instructor: engineInput.instructor[instructorId],
-                    room: engineInput.room[engineInput.availableRoomSlot[slotId].roomId],
+                    instructorId: engineInput.instructor[instructorId].id,
+                    roomId: engineInput.room[engineInput.availableRoomSlot[slotId].roomId].id,
                     weekDay: engineInput.availableRoomSlot[slotId].weekday,
                     startTime: engineInput.availableRoomSlot[slotId].time[0],
-                    endTime: engineInput.availableRoomSlot[slotId].time[1],
+                    endTime: engineInput.availableRoomSlot[slotId].time[0] + engineInput.classes[newClassId].period,
                 }
+                
                 suggestionResult.classes.push(obj);
             });
 
@@ -482,6 +493,10 @@ export const engine = (input: any) => {
     let res = engine.run();
 
     let engineOutput = new EngineOutput(engineInput, res);
+    
+    // return {
+    //     result: engineInput.availableRoomSlot,
+    // };
 
     return {
         result: engineOutput.result,
