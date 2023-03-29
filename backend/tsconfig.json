@@ -65,5 +65,5 @@
     "src/**/*.ts",
     "migrations/**/*.ts",
     "src/configs/*.json"
-  ]
+, "src/gaEngine/gaEngine.ts.old"  ]
 }
