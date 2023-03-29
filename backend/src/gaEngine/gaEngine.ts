@@ -143,6 +143,17 @@ class EngineInput {
                 period: parseInt(item.period),
                 capacity: parseInt(item.capacity),
                 instructors: this.subject[item.subjectId].instructors,
+                preferedWeekday: item.preferedWeekDay
+                    .toString()
+                    .split(",")
+                    .map((weekday: any) => parseInt(weekday)),
+                preferedTime: item.preferedTime
+                    .toString()
+                    .split(",")
+                    .map((timeRange: any) => timeRange
+                        .split("-")
+                        .map((time: any) => parseInt(time)
+                    )),
             }
             this.classes.push(obj);
         })
@@ -219,18 +230,19 @@ class EngineInput {
                 timeSlot: [...Array(3).keys()].map((item: number) => {
                     return {
                         weekday: item,
-                        time: [7, 18],
+                        time: [0, 24],
                     };
                 }),
                 coord: item.coord,
             };
             tempSlots.push(obj);
         });
+        
         // Sieve available slot
         this.timetable.forEach((classItem: any) => {
             const slotId = tempSlots.findIndex((val: any) => {
                 return val.roomId === classItem.roomId;
-            })
+            });
             const maxI = tempSlots[slotId].timeSlot.length;
             for (let i = 0; i < maxI; ++i) {
                 let timeSlotItem = tempSlots[slotId].timeSlot[i];
@@ -258,14 +270,20 @@ class EngineInput {
                 }
                 // Split slot and replace occupied one
                 let split = []
-                if (timeSlotItem.time[0] < split1) {
+                if (
+                    split1 !== timeSlotItem.time[1] &&
+                    timeSlotItem.time[0] < split1
+                ) {
                     split1 = {
                         weekday: timeSlotItem.weekday,
                         time: [timeSlotItem.time[0], split1],
                     };
                     split.push(split1);
                 }
-                if (split2 < timeSlotItem.time[1]) {
+                if (
+                    split2 !== timeSlotItem.time[0] &&
+                    split2 < timeSlotItem.time[1]
+                ) {
                     split2 = {
                         weekday: timeSlotItem.weekday,
                         time: [split2, timeSlotItem.time[1]],
@@ -273,15 +291,12 @@ class EngineInput {
                     split.push(split2);
                 }
                 if (split.length > 0) {
-                    tempSlots[slotId].timeSlot.splice(
-                        i,
-                        1,
-                        ...split
-                    );
+                    tempSlots[slotId].timeSlot.splice(i, 1, ...split);
                 }
                 break;
             }
         });
+        
         // Convert to availableRoomSlot
         tempSlots.forEach((item: any) => {
             item.timeSlot.forEach((timeSlotItem: any) => {
@@ -319,7 +334,7 @@ class EngineInput {
                 this.instructor[instructorId].slotAvailability[i].time[0] = Math.max(currSlot.time[0], item.time[1]);
                 this.instructor[instructorId].slotAvailability[i].time[0] = Math.min(currSlot.time[1], item.time[0]);
             }
-        })
+        });
     }
 
     private convertSubject(input: any[]) {
@@ -369,22 +384,61 @@ class EngineOutput {
             }
 
             let classId = engineInput.timetable.length;
+
+            let availableRoomSlot = _.cloneDeep(engineInput.availableRoomSlot); // Clone of available room slot
+            let instructor = _.cloneDeep(engineInput.instructor); // Clone of instructors
         
-            chromosome.forEach((value: any, newClassId: number) => {
+            chromosome.forEach((value: any, newClassIndex: number) => {
                 const slotId = value % totalFreeSlot;
                 const instructorId = Math.floor(value / totalFreeSlot);
+                
+                let geneEval = geneEvaluate({
+                    availableRoomSlot: availableRoomSlot,
+                    instructor: instructor,
+                    newClassIndex: newClassIndex,
+                    slotId: slotId,
+                    instructorId: instructorId
+                });
 
+                instructor[instructorId].slotAvailability[slotId].time[0] +=
+                    engineInput.classes[newClassIndex].period;
+                availableRoomSlot[slotId].time[0] +=
+                    engineInput.classes[newClassIndex].period;
+
+                
+                if (geneEval.score > 0) {
+                    instructor[instructorId].slotAvailability[slotId].time[0] += 
+                        engineInput.classes[newClassIndex].period;
+                    let classStartTime = Math.max(availableRoomSlot[slotId].time[0], engineInput.classes[newClassIndex].preferedTime[geneEval.preferedTime][0]);
+                    let classEndTime = classStartTime + engineInput.classes[newClassIndex].period;
+                    let split: any[] = [];
+                    if (classStartTime > availableRoomSlot[slotId].time[0]) {
+                        const obj = {
+                            ...availableRoomSlot[slotId],
+                            time: [availableRoomSlot[slotId].time[0], classStartTime]
+                        }
+                        split.push(obj);
+                    }
+                    if (classEndTime < availableRoomSlot[slotId].time[1]) {
+                        const obj = {
+                            ...availableRoomSlot[slotId],
+                            time: [classEndTime, availableRoomSlot[slotId].time[1]]
+                        }
+                        split.push(obj);
+                    }
+                    availableRoomSlot.splice(slotId, 1, ...split);
+                }
+                
                 const obj = {
                     id: classId++,
                     // name: engineInput.classes;
-                    subjectId: engineInput.classes[newClassId].subjectId,
+                    subjectId: engineInput.classes[newClassIndex].subjectId,
                     instructorId: engineInput.instructor[instructorId].id,
                     roomId: engineInput.room[engineInput.availableRoomSlot[slotId].roomId].id,
-                    weekDay: engineInput.availableRoomSlot[slotId].weekday,
-                    startTime: engineInput.availableRoomSlot[slotId].time[0],
-                    endTime: engineInput.availableRoomSlot[slotId].time[0] + engineInput.classes[newClassId].period,
+                    weekDay: geneEval.score ? engineInput.availableRoomSlot[slotId].weekday : null,
+                    startTime: geneEval.score ? engineInput.availableRoomSlot[slotId].time[0] : null,
+                    endTime: geneEval.score ? engineInput.availableRoomSlot[slotId].time[0] + engineInput.classes[newClassIndex].period : null,
                 }
-                
                 suggestionResult.classes.push(obj);
             });
 
@@ -393,10 +447,86 @@ class EngineOutput {
     }
 }
 
+const geneEvaluate = ({
+        availableRoomSlot,
+        instructor,
+        newClassIndex,
+        slotId, 
+        instructorId,
+    }: any) => {
+    let res = {
+        score: 1,
+        preferedTime: -1,
+    }
+    
+
+    do {
+        // Satisfied all hard constraints
+        // Check appropritate instructor (instructor - class)
+        if (instructorId >= engineInput.classes[newClassIndex].instructors.length) {
+            res.score *= 0;
+            break;
+        }
+        // Check valid slot (class - room)
+        // Time availability
+        if (!engineInput.classes[newClassIndex].preferedWeekday.includes(availableRoomSlot[slotId].weekday)) {
+            res.score *= 0;
+            break;
+        }
+        const maxI = engineInput.classes[newClassIndex].preferedTime.length;
+        let isNotFit = true;
+        let startTime = 0;
+        let endTime = 0;
+        for (let i = 0; i < maxI; ++i) {
+            // Fit to prefered time range
+            startTime = Math.max(availableRoomSlot[slotId].time[0], engineInput.classes[newClassIndex].preferedTime[i][0]);
+            endTime = Math.min(availableRoomSlot[slotId].time[1], engineInput.classes[newClassIndex].preferedTime[i][1]);
+            const timeRange = endTime - startTime;
+            if (timeRange < engineInput.classes[newClassIndex].period) {
+                continue;
+            }
+            isNotFit = false;
+            res.preferedTime = i;
+            break;
+        }
+        if (isNotFit) {
+            res.score *= 0;
+            break;
+        }
+        // Type match
+        if (availableRoomSlot[slotId].type != engineInput.classes[newClassIndex].type) {
+            res.score *= 0;
+            break;
+        }
+        // Capacity availability
+        if (availableRoomSlot[slotId].capacity < engineInput.classes[newClassIndex].capacity) {
+            res.score *= 0;
+            break;
+        }
+
+        // Check instructor time
+        if (instructor[instructorId].slotAvailability[slotId].time[0] >= instructor[instructorId].slotAvailability[slotId].time[1]) {
+            res.score *= 0;
+            break;
+        }
+        // Check distance
+        const proxRoomId = engineInput.instructor[instructorId].slotAvailability[slotId].proxRoomId;
+        if (proxRoomId !== undefined) {
+            const dist = engineInput.room[proxRoomId].coord.distanceTo(availableRoomSlot[slotId].coord);
+            if (dist > 0) {
+                res.score *= 0;
+                break;
+            }
+        }
+
+        // TODO: Check student count
+    } while (false);
+
+    return res;
+}
 
 const fitness = (entity: Entity) => {
     let score = 0;
-
     // Cloning data
     let availableRoomSlot = _.cloneDeep(engineInput.availableRoomSlot); // Clone of available room slot
     let instructor = _.cloneDeep(engineInput.instructor); // Clone of instructors
@@ -406,62 +536,38 @@ const fitness = (entity: Entity) => {
         const slotId = value % totalFreeSlot;
         const instructorId = Math.floor(value / totalFreeSlot);
 
-        // Check appropritate instructor (instructor - class)
-        if (
-            instructorId >=
-            engineInput.classes[newClassIndex].instructors.length
-        ) {
-            return;
-        }
-        // Check valid slot (class - room)
-        // Time availability
-        const timeLeft =
-            availableRoomSlot[slotId].time[1] -
-            availableRoomSlot[slotId].time[0]; // Timeleft = slot's time - occupied time
-        if (
-            timeLeft <= 0 ||
-            timeLeft < engineInput.classes[newClassIndex].period
-        ) {
-            return;
-        }
-        // Type match
-        if (
-            availableRoomSlot[slotId].type !=
-            engineInput.classes[newClassIndex].type
-        ) {
-            return;
-        }
-        // Capacity availability
-        if (
-            availableRoomSlot[slotId].capacity <
-            engineInput.classes[newClassIndex].capacity
-        ) {
-            return;
-        }
+        let geneEval = geneEvaluate({
+            availableRoomSlot: availableRoomSlot,
+            instructor: instructor,
+            newClassIndex: newClassIndex,
+            slotId: slotId,
+            instructorId: instructorId
+        });
+        score += geneEval.score;
 
-        // Check instructor time
-        if (engineInput.instructor[instructorId].slotAvailability[slotId].time[0] >= engineInput.instructor[instructorId].slotAvailability[slotId].time[1]) {
-            return;
-        }
-        // Check distance
-        const proxRoomId = engineInput.instructor[instructorId].slotAvailability[slotId].proxRoomId;
-        if (proxRoomId !== undefined) {
-            const dist = engineInput.room[proxRoomId].coord.distanceTo(
-                engineInput.availableRoomSlot[slotId].coord
-            );
-            if (dist > 0) {
-                return;
+        
+        if (geneEval.score > 0) {
+            instructor[instructorId].slotAvailability[slotId].time[0] += 
+                engineInput.classes[newClassIndex].period;
+            let classStartTime = Math.max(availableRoomSlot[slotId].time[0], engineInput.classes[newClassIndex].preferedTime[geneEval.preferedTime][0]);
+            let classEndTime = classStartTime + engineInput.classes[newClassIndex].period;
+            let split: any[] = [];
+            if (classStartTime > availableRoomSlot[slotId].time[0]) {
+                const obj = {
+                    ...availableRoomSlot[slotId],
+                    time: [availableRoomSlot[slotId].time[0], classStartTime]
+                }
+                split.push(obj);
             }
+            if (classEndTime < availableRoomSlot[slotId].time[1]) {
+                const obj = {
+                    ...availableRoomSlot[slotId],
+                    time: [classEndTime, availableRoomSlot[slotId].time[1]]
+                }
+                split.push(obj);
+            }
+            availableRoomSlot.splice(slotId, 1, ...split);
         }
-
-        // TODO: Check student count
-
-        // TODO: Satisfied all hard constraints
-        instructor[instructorId].slotAvailability[slotId].time[0] +=
-            engineInput.classes[newClassIndex].period;
-        availableRoomSlot[slotId].time[0] +=
-            engineInput.classes[newClassIndex].period;
-        score += 1;
     });
     return score;
 };
@@ -493,10 +599,6 @@ export const engine = (input: any) => {
     let res = engine.run();
 
     let engineOutput = new EngineOutput(engineInput, res);
-    
-    // return {
-    //     result: engineInput.availableRoomSlot,
-    // };
 
     return {
         result: engineOutput.result,
