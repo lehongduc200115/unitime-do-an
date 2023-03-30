@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
+import { Entity, GeneticAlgorithm } from "./GeneticAlgorithm";
 import { ICoord } from "./type";
 
 /**

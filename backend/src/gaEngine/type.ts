@@ -5,6 +5,20 @@ export interface ICoord {
     distanceTo: (point: ICoord) => number,
 }
 
+export interface ITimeFrame {
+    id: string,
+    start: ITime,
+    end: ITime,
+}
+
+export interface ITime {
+    hour: number,
+    minute: number,
+    toInt: () => number,
+    toString: () => string,
+}
+
+
 // Engine input type
 export interface IEngineInput {
     freeSlots: IEngineInputFreeSlot[],
@@ -13,27 +27,18 @@ export interface IEngineInput {
     rooms: IEngineInputRoom[],
     subjects: IEngineInputSubject[],
     timetable: IEngineInputClass[],
+    periodCount: number,
 }
 
 export interface IEngineInputFreeSlot {
     roomId: string,
     roomType: string,
     roomCapacity: number,
-    timeFrame: {
-        start: any,
-        end: any
-    }
+    roomCoord: ICoord,
+    timeFrame: ITimeFrame,
     // Next following 3 attributes represent entities that take the slot
-    activeClasses: {
-        [key: string]: string,
-    }
-    activeStudents: {
-        [key: string]: string,
-    }
-    activeInstructors: {
-        [key: string]: string,
-    }
-    coord: ICoord,
+    activeClasses: { [key: string]: any },
+    activeStudents: { [key: string]: any },
 }
 
 export interface IEngineInputClass {
@@ -43,14 +48,19 @@ export interface IEngineInputClass {
     instructorId: string,
     roomId: string,
     weekday: any,
-    startTime: any,
-    endTime: any,
+    startTime: ITime,
+    endTime: ITime,
 }
 
 export interface IEngineInputInstructor {
     id: string,
     name: string,
     department: string,
+    activeClasses: { 
+        [weekday: string]: {
+            [periodId: string]: any,
+        }
+    },
 }
 
 export interface IEngineInputNewClass {
@@ -60,7 +70,7 @@ export interface IEngineInputNewClass {
     capacity: number,
     instructors: string[],
     preferedWeekday: any[],
-    preferedTime: any[],
+    preferedTime: ITimeFrame[],
 }
 
 export interface IEngineInputRoom {
@@ -76,6 +86,6 @@ export interface IEngineInputSubject {
     name: string,
     department: string,
     instructors: string[],
-    newStudent?: string[],
+    newStudents: { [key: string]: any },
 }
 
