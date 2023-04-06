@@ -6,9 +6,11 @@ export interface INewClass {
   type: string;
   subjectId: string;
   preferedWeekDay: string;
-  preferedTime: string;
+  preferedPeriod: string;
+  entrants: number;
   capacity: number;
   period?: number;
+  scaleUpClass?: string;
   status?: Status;
   createdBy?: string;
   updatedBy?: string;
@@ -24,7 +26,7 @@ const newClassSchema: Schema<NewClassDocument> = new Schema(
     },
     type: {
       type: String,
-      default: "LEC"
+      default: "LEC",
     },
     subjectId: {
       type: String,
@@ -33,15 +35,22 @@ const newClassSchema: Schema<NewClassDocument> = new Schema(
     preferedWeekDay: {
       type: String,
     },
-    preferedTime: {
+    preferedPeriod: {
       type: String,
     },
     capacity: {
       type: Number,
     },
+    entrants: {
+      type: Number,
+      required: false,
+    },
     period: {
+      type: Number,
+      required: false,
+    },
+    scaleUpClass: {
       type: String,
-      required: false
     },
     status: {
       type: String,

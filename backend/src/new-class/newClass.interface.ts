@@ -4,8 +4,11 @@ export interface INewClassPayload {
   id: string;
   subjectId: string;
   type?: string;
-  name: string;
-  department: string;
+  entrants: number;
+  preferedWeekday?: string;
+  preferedPeriod?: string;
+  period: number;
+  scaleUpClass?: string;
   status?: Status;
 }
 

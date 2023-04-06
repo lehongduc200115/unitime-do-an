@@ -2,8 +2,6 @@ export const excelSchemaMapping: Record<string, any> = {
   student: {
     ID: "id",
     NAME: "name",
-    // WEEKLY_TIME_TALBLE: "weeklyTimetable",s
-    // CLASS_TYPE: "classType",
     DEPARTMENT: "department",
   },
   room: {
@@ -38,13 +36,6 @@ export const excelSchemaMapping: Record<string, any> = {
     ID: "id",
     DEPARTMENT: "department",
     NAME: "name",
-    // NUM_LAB_HOURS: "numLabHours",
-    // NUM_LEC_HOURS: "numLecHours",
-    // PREFERED_WEEKDAY: "preferedWeekDay",
-    // PREFERED_TIME: "preferedTime",
-    // LEC_CAPACITY: "lecCapacity",
-    // LAB_CAPACITY: "labCapacity",
-    // LAB_TYPE: "labType",
     INSTRUCTORS: "instructors",
   },
   newClass: {
@@ -53,15 +44,17 @@ export const excelSchemaMapping: Record<string, any> = {
     TYPE: "type",
     PREFERED_WEEKDAY: "preferedWeekDay",
     PREFERED_PERIOD: "preferedPeriod",
+    ENTRANTS: "entrants",
     CAPACITY: "capacity",
     PERIOD: "period",
+    SCALEUP_CLASS: "scaleUpClass",
   },
   period: {
     ID: "id",
     START_TIME: "startTime",
     END_TIME: "endTime",
-    BREAK_INTERVAL: "breakInterval"
-  }
+    BREAK_INTERVAL: "breakInterval",
+  },
 };
 
 export const timetableMapping: Record<string, any> = {

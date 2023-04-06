@@ -15,10 +15,11 @@ export const createValidator: RouteOptionsValidate = {
       id: Joi.string(),
       subjectId: Joi.number(),
       type: Joi.string().optional(),
-      preferedWeekDay: Joi.number(),
-      preferedTime: Joi.number(),
-      capacity: Joi.number().optional(),
+      preferedWeekDay: Joi.string().optional(),
+      preferedPeriod: Joi.string().optional(),
+      entrants: Joi.number().optional(),
       period: Joi.string().optional(),
+      scaleUpClass: Joi.string().optional(),
     })
   ),
 };
