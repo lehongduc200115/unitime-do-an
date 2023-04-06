@@ -25,6 +25,7 @@ export interface IEngineInput {
     students: IEngineInputStudent[],
     subjects: IEngineInputSubject[],
     timetable: IEngineInputClass[],
+    modifiedSubjects: number[],
 }
 
 export interface IEngineInputClass {
@@ -50,8 +51,9 @@ export interface IEngineInputNewClass {
     subjectI: number,
     type: string,
     period: number,
-    capacity: number,
+    entrants: number,
     instructors: number[],      // Use engine's index (instructorI)
+    scaleupClass: boolean,
     preferedWeekday: number[],
     preferedPeriod: number[][], // Array of prefered startPeriodI, e.g. [[0,6],[7,11]]... (value is refined from origin, which still includes endPeriodId)
 }
@@ -84,6 +86,8 @@ export interface IEngineInputSubject {
     name: string,
     department: string,
     instructors: number[],  // Use engine's index
+    classes: number[],      // Use engine's index
     newStudents: number[],  // Use engine's index
+    newClasses: number[],   // Use engine's index
 }
 

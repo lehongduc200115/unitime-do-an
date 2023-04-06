@@ -33,6 +33,7 @@ class EngineInput implements IEngineInput {
     students: IEngineInputStudent[] = [];
     subjects: IEngineInputSubject[] = [];
     timetable: IEngineInputClass[] = [];
+    modifiedSubjects: number[] = [];
 
     constructor(input: any[]) {
         let enrollmentInput: any[] = [];
@@ -158,22 +159,27 @@ class EngineInput implements IEngineInput {
                             return instructor.id === instructorId;
                         });
                     }),
+                classes: [],
                 newStudents: [],
+                newClasses: [],
             } as IEngineInputSubject;
         });
     }
 
     // Phase 2 parser (ordered)
     convertClasses(input: any[]) {
-        this.newClasses = input.map((rowItem: any) => {
+        this.newClasses = input.map((rowItem: any, newClassI: number) => {
+            const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
+                return subject.id === rowItem.id;
+            });
+            this.subjects[subjectI].newClasses.push(newClassI);
+
             return {
                 id: rowItem.id,
-                subjectI: this.subjects.findIndex((subject: IEngineInputSubject) => {
-                    return subject.id === rowItem.id;
-                }),
+                subjectI: subjectI,
                 type: rowItem.type,
                 period: parseInt(rowItem.period),
-                capacity: parseInt(rowItem.capacity),
+                entrants: parseInt(rowItem.entrants),
                 instructors: this.subjects
                     .find((subject) => {
                         return subject.id === rowItem.subjectId;
@@ -242,11 +248,11 @@ class EngineInput implements IEngineInput {
             if (rowItem.classId !== undefined) {
                 const currClassI = this.timetable.findIndex((classItem: IEngineInputClass) => {
                     return classItem.id = rowItem.classId;
-                })
-                const currClassItem = this.timetable[currClassI]
+                });
+                const currClassItem = this.timetable[currClassI];
                 const studentI = this.students.findIndex((student: IEngineInputStudent) => {
                     return student.id === rowItem.studentId;
-                })
+                });
                 for (let i = currClassItem!.startPeriod; i <= currClassItem!.endPeriod; ++i) {
                     this.students[studentI].activeClasses[currClassItem!.weekday][i] = currClassI;
                 }
@@ -256,7 +262,7 @@ class EngineInput implements IEngineInput {
                 });
                 const studentI = this.students.findIndex((student: IEngineInputStudent) => {
                     return student.id === rowItem.studentId;
-                })
+                });
                 this.subjects[currSubjectI].newStudents.push(studentI);
             }
         });
@@ -306,7 +312,7 @@ class EngineOutput {
                     id: engineInput.newClasses[newClassI].id,
                     subject: engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name,
                     type: engineInput.newClasses[newClassI].type,
-                    capacity: engineInput.newClasses[newClassI].capacity,
+                    capacity: engineInput.newClasses[newClassI].entrants,
                     weekday: "N/A",
                     period: "N/A",
                     time: "N/A",
@@ -395,7 +401,7 @@ const geneEvaluate = ({
             break;
         }
         // Capacity availability
-        if (engineInput.rooms[roomI].capacity < engineInput.newClasses[newClassI].capacity) {
+        if (engineInput.rooms[roomI].capacity < engineInput.newClasses[newClassI].entrants) {
             score *= 0;
             break;
         }
@@ -461,13 +467,16 @@ const classFitness = (entity: Entity) => {
 
 export const engine = (input: any) => {
     // -- Parsing input to engine input
+    console.log("Adapt input to engine...");
     engineInput = new EngineInput(input);
+    console.log("-- Done!");
 
+    console.log("Initialize engine configuration...");
     // -- Engine configuration for class searching
-    let engineConfig: any = {
+    let engineClassConfig: any = {
         chromosomeLength: engineInput.newClasses.length * 2,
         geneCount: engineInput.rooms.length,
-        generation: 50,
+        generation: 100,
         mutationRate: 0.01,
         maxPopulationSize: 20,
         fitness: classFitness,
@@ -479,13 +488,13 @@ export const engine = (input: any) => {
     }
     const timeLength = 7 * engineInput.periods.length;
     for (let i = 0; i < engineInput.subjects.length; ++i) {
-        engineConfig.geneCount = Math.max(
-            engineConfig.geneCount, 
+        engineClassConfig.geneCount = Math.max(
+            engineClassConfig.geneCount, 
             engineInput.subjects[i].instructors.length * timeLength
         );
     }
     // Custom crossover function for class searching
-    engineConfig.crossover = (first: Entity, second: Entity) => {
+    engineClassConfig.crossover = (first: Entity, second: Entity) => {
         let firstChild: any;
         let secondChild: any;
     
@@ -501,28 +510,29 @@ export const engine = (input: any) => {
     
     
         firstChild = new Entity({
-            geneCount: engineConfig.geneCount,
+            geneCount: engineClassConfig.geneCount,
             chromosome: firstChild,
             calcFitness: classFitness,
         });
         secondChild = new Entity({
-            geneCount: engineConfig.geneCount,
+            geneCount: engineClassConfig.geneCount,
             chromosome: secondChild,
             calcFitness: classFitness,
         });
     
-        firstChild.mutate(engineConfig.mutationRate);
-        secondChild.mutate(engineConfig.mutationRate);
+        firstChild.mutate(engineClassConfig.mutationRate);
+        secondChild.mutate(engineClassConfig.mutationRate);
     
         return [firstChild, secondChild];
     }
+    console.log("-- Done!");
     
-    // Run engine
+    // -- Run engine
     const topCount = 5;
     let bestRes: Entity[] = [];     // Store best results from each run
     let engine = new GeneticAlgorithm();
-    engine.configurate(engineConfig);
-
+    engine.configurate(engineClassConfig);
+    // Find class 
     for (let i = 0; i < topCount; ++i) {
         bestRes.push(engine.run()[0]);
     }
