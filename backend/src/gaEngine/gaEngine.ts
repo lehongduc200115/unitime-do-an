@@ -86,23 +86,23 @@ class EngineInput implements IEngineInput {
                 }
             }
         });
-        // Phase 1 parsing (inordered)
+        // Phase 1 parsing - basic input (ordered)
         this.convertInstructor(instructorInput);
         this.convertPeriod(periodInput)
         this.convertRoom(roomInput);
         this.convertStudent(studentInput);
         this.convertSubject(subjectInput);
-        // Phase 2 parsing (ordered)
+        // Phase 2 parsing - refined input (ordered)
         this.convertClasses(newClassInput);
         this.convertTimetable(timetableInput);
         this.convertEnrollment(enrollmentInput);
     }
 
-    // Phase 1 parser (inordered)
+    // Phase 1 parser - basic input (ordered)
     convertInstructor(input: any[]) {
         this.instructors = input.map((rowItem: any) => {
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
                 activeClasses: new Array(7).fill(new Array(this.periods.length).fill(undefined)),
@@ -113,7 +113,7 @@ class EngineInput implements IEngineInput {
     convertPeriod(input: any[]) {
         this.periods = input.map((rowItem: any) => {
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 startTime: rowItem.startTime,
                 endTime: rowItem.endTime,
                 breakInterval: parseInt(rowItem.breakInterval),
@@ -124,7 +124,7 @@ class EngineInput implements IEngineInput {
     convertRoom(input: any[]) {
         this.rooms = input.map((rowItem: any) => {
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 label: rowItem.label,
                 type: rowItem.classType,
                 capacity: parseInt(rowItem.capacity),
@@ -137,7 +137,7 @@ class EngineInput implements IEngineInput {
     convertStudent(input: any[]) {
         this.students = input.map((rowItem: any) => {
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
                 activeClasses: new Array(7).fill(new Array(this.periods.length).fill(undefined)),
@@ -148,7 +148,7 @@ class EngineInput implements IEngineInput {
     convertSubject(input: any[]) {
         this.subjects = input.map((rowItem: any) => {
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
                 instructors: rowItem.instructors
@@ -166,23 +166,23 @@ class EngineInput implements IEngineInput {
         });
     }
 
-    // Phase 2 parser (ordered)
+    // Phase 2 parser - refined input (ordered)
     convertClasses(input: any[]) {
         this.newClasses = input.map((rowItem: any, newClassI: number) => {
             const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
-                return subject.id === rowItem.id;
+                return subject.id === rowItem.id.toString();
             });
             this.subjects[subjectI].newClasses.push(newClassI);
-
+            
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 subjectI: subjectI,
                 type: rowItem.type,
                 period: parseInt(rowItem.period),
                 entrants: parseInt(rowItem.entrants),
                 instructors: this.subjects
                     .find((subject) => {
-                        return subject.id === rowItem.subjectId;
+                        return subject.id === rowItem.subjectId.toString();
                     })
                     ?.instructors,
                 preferedWeekday: rowItem.preferedWeekDay
@@ -210,16 +210,16 @@ class EngineInput implements IEngineInput {
 
     convertTimetable(input: any[]) {
         this.timetable = input.map((rowItem: any, classI: number) => {
-            const instructorI = this.instructors.findIndex((instructor : IEngineInputInstructor) => instructor.id === rowItem.instructorId);
-            const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => subject.id === rowItem.subjectId);
-            const roomI = this.subjects.findIndex((room: IEngineInputSubject) => room.id === rowItem.roomId);
+            const instructorI = this.instructors.findIndex((instructor: IEngineInputInstructor) => instructor.id === rowItem.instructorId.toString());
+            const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => subject.id === rowItem.subjectId.toString());
+            const roomI = this.subjects.findIndex((room: IEngineInputSubject) => room.id === rowItem.roomId.toString());
             // Create active class for instructors
             let maxI = this.periods.findIndex((period: IEngineInputPeriod) => {
-                return period.id === rowItem.endPeriod;
+                return period.id === rowItem.endPeriod.toString();
             });
             maxI += 1;
             let i = this.periods.findIndex((period: IEngineInputPeriod) => {
-                return period.id === rowItem.startPeriod;
+                return period.id === rowItem.startPeriod.toString();
             });
             for (; i < maxI; ++i) {
                 this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay]][i] = classI;
@@ -227,17 +227,17 @@ class EngineInput implements IEngineInput {
             }
             
             return {
-                id: rowItem.id,
+                id: rowItem.id.toString(),
                 name: rowItem.name,
                 subjectI: subjectI,
                 instructorI: instructorI,
                 roomI: roomI,
                 weekday: EWeekday[rowItem.weekDay],
                 startPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
-                    return period.id === rowItem.startPeriod;
+                    return period.id === rowItem.startPeriod.toString();
                 }),
                 endPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
-                    return period.id === rowItem.endPeriod;
+                    return period.id === rowItem.endPeriod.toString();
                 }),
             } as IEngineInputClass;
         });
@@ -247,21 +247,21 @@ class EngineInput implements IEngineInput {
         input.forEach((rowItem: any) => {
             if (rowItem.classId !== undefined) {
                 const currClassI = this.timetable.findIndex((classItem: IEngineInputClass) => {
-                    return classItem.id = rowItem.classId;
+                    return classItem.id = rowItem.classId.toString();
                 });
                 const currClassItem = this.timetable[currClassI];
                 const studentI = this.students.findIndex((student: IEngineInputStudent) => {
-                    return student.id === rowItem.studentId;
+                    return student.id === rowItem.studentId.toString();
                 });
                 for (let i = currClassItem!.startPeriod; i <= currClassItem!.endPeriod; ++i) {
                     this.students[studentI].activeClasses[currClassItem!.weekday][i] = currClassI;
                 }
             } else {
                 let currSubjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
-                    return subject.id === rowItem.subjectId;
+                    return subject.id === rowItem.subjectId.toString();
                 });
                 const studentI = this.students.findIndex((student: IEngineInputStudent) => {
-                    return student.id === rowItem.studentId;
+                    return student.id === rowItem.studentId.toString();
                 });
                 this.subjects[currSubjectI].newStudents.push(studentI);
             }
@@ -284,6 +284,7 @@ class EngineOutput {
     constructor(engineInput: EngineInput, engineResult: Entity[]) {
         this.result = [];
         engineResult.forEach((entity: Entity, suggestionI: number) => {
+            this.result[suggestionI] = [];
             let maxI = engineInput.newClasses.length;
             // Accumulate gene result
             let extendedInput = {
@@ -298,7 +299,7 @@ class EngineOutput {
                 const weekday = gene % (7 * engineInput.periods.length) % 7;
                 const startPeriodI = Math.floor(gene % (7 * engineInput.periods.length) / 7); // Raw iteration; modulus to max possible length of each prefered period range for usable iteration
         
-                let geneEval = geneEvaluate({
+                let geneEval = classGeneEvaluate({
                     newClassI: newClassI,
                     weekday: weekday,
                     startPeriodI: startPeriodI,
@@ -332,7 +333,7 @@ class EngineOutput {
     }
 }
 
-const geneEvaluate = ({
+const classGeneEvaluate = ({
         newClassI,
         weekday,
         startPeriodI,
@@ -426,7 +427,9 @@ const geneEvaluate = ({
         // Satisfied all hard constraints
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
         for (let periodI = startPeriodI; periodI < maxI; ++periodI) {
+            extendedInput.rooms[roomI] = new Array(7).fill(new Array(engineInput.periods.length).fill(undefined));
             extendedInput.rooms[roomI][weekday][startPeriodI] = newClassI;
+            extendedInput.instructors[instructorI] = new Array(7).fill(new Array(engineInput.periods.length).fill(undefined));
             extendedInput.instructors[instructorI][weekday][startPeriodI] = newClassI;
         }
     } while (false);
@@ -450,7 +453,7 @@ const classFitness = (entity: Entity) => {
         const weekday = gene % (7 * engineInput.periods.length) % 7;
         const startPeriodI = Math.floor(gene % (7 * engineInput.periods.length) / 7); // Raw iteration; modulus to max possible length of each prefered period range for usable iteration
 
-        let geneEval = geneEvaluate({
+        let geneEval = classGeneEvaluate({
             newClassI: newClassI,
             weekday: weekday,
             startPeriodI: startPeriodI,
