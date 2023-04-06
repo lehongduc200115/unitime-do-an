@@ -6,6 +6,10 @@ import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
 import { VisualizePanel } from './VisualizePanel/VisualizePanel';
 import { VisualizeResultPanel } from './VisualizeResultPanel/VisualizeResultPanel';
+import { Button } from '@mui/material';
+import { BKAlert } from 'src/components/Alert/BKAlert';
+import { BKTable } from 'src/components/Table/BKTable';
+import { clone } from 'lodash';
 
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
@@ -41,11 +45,29 @@ const visualizeData = (importedData: IImportedData) => {
   })
 
   console.log(`sheet: ${JSON.stringify(sheets)}`)
+  console.log(`importedData: ${JSON.stringify(importedData)}`)
 
   return {
     sheets,
     importedData
   };
+}
+
+const visualizeData2 = (importedData: IImportedData) => {
+  console.log(`importedData: ${JSON.stringify(importedData)}`)
+
+  // const rows = importedData.map(it => it.rows);
+  // const columns = rows.map(it => Object.keys(it[0]));
+  // // const columns = Object.keys(rows[0]);
+  // const names = importedData.map(it => it.sheetName);
+
+  return importedData.map(table => {
+    return {
+      rows: table.rows,
+      columns: Object.keys(table.rows[0]),
+      sheetName: table.sheetName
+    }
+  });
 }
 
 const backendSolver = async (importedData: any) => {
@@ -70,6 +92,9 @@ export default function Test() {
     const res = await helpers.xlsxToJson(e.target.files[0]);
     const sheetNames = await helpers.getSheetNames(e.target.files[0]);
     const dataVisualized = visualizeData(res);
+    const tableVisualized = visualizeData2(res);
+    setTables(tableVisualized);
+
     setSheetNames(sheetNames);
     setResult(res);
     console.log(`stuck: ${JSON.stringify(dataVisualized.sheets)}`)
@@ -118,31 +143,69 @@ export default function Test() {
   const [backendResponse, setBackendresponse] = React.useState<any>([])
   // const [importResult, setImportResult] = React.useState(null)
   // const [fetchResult, setFetchResult] = React.useState(null)
+  const [openAlert, setOpenAlert] = React.useState(false)
+  // const [columns, setColumns] = React.useState([
+  //   'name', 'age', 'gender'
+  // ]);
+
+  // const [tableName, setTableName] = React.useState(
+  //   'default tableName'
+  // );
+
+  const [tables, setTables] = React.useState<any>([
+    {
+      columns: ['name', 'age', 'gender'],
+      rows:
+        [
+          { id: 1, name: 'John Doe', age: 35, gender: 'Male' },
+          { id: 2, name: 'Jane Smith', age: 27, gender: 'Female' },
+          { id: 3, name: 'Bob Johnson', age: 42, gender: 'Male' },
+        ],
+      sheetName: 'default tableName'
+    }
+  ]);
+
   return <div>
     input file here: <input type="file" id="input" onChange={handleOnChange} />
 
     <p>result goes here: {JSON.stringify(result)}</p>
     <p>beResponse goes here: {JSON.stringify(backendResponse)}</p>
-    {/* <br />
-    <br />
-    <br />
-    <p>import goes here: <button onClick={handleOnClick}>import</button></p>
-
-    <p>result import goes here: {JSON.stringify(importResult)}</p>
-    <br />
-    <br />
-    <br />
-    <p>fetch goes here: <button onClick={handleOnClickFetch}>fetch</button></p>
-
-    <p>result fetch goes here: {JSON.stringify(fetchResult)}</p> */}
     {
       (backendResponse && backendResponse.data && backendResponse.data.status === "success")
-      ? (<VisualizeResultPanel visualizeData={backendResponse.data.data.result}/>)
-      : ""
+        ? (<VisualizeResultPanel visualizeData={backendResponse.data.data.result} />)
+        : ""
     }
-    
-    <VisualizePanel visualizeData={() => visualizedParsedData}></VisualizePanel>
-    {/* <Spreadsheet data={[data["class"]] as any || []}></Spreadsheet> */}
-    <p>sheetname: {sheetNames}</p>
+
+    <Button onClick={() => { setOpenAlert(true) }}>
+      show alert
+    </Button>
+    <BKAlert
+      severity="success"
+      // title="My Alert"
+      open={openAlert}
+      onClose={() => { setOpenAlert(false) }}
+    >
+      This is a success message!
+    </BKAlert>
+    {
+      tables.map((table: any, index: number) => {
+        console.log(`$$$ ${table.sheetName} ${JSON.stringify(table.columns)} ${JSON.stringify(table.rows)}`)
+        return (
+          <BKTable 
+            name={table.sheetName} 
+            columns={table.columns} 
+            data={table.rows} 
+            setData={(tableData) => {
+              console.log(`den day 2: ${JSON.stringify(tableData)}`)
+              const clonedTable = JSON.parse(JSON.stringify(tables));
+              clonedTable[index].rows = tableData;
+              console.log(`den day: ${JSON.stringify(clonedTable[index])}`)
+              setTables(clonedTable);
+            }}
+          />
+        );
+      })
+    }
+
   </div>
 }
