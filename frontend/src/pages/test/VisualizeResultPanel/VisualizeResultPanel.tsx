@@ -39,7 +39,6 @@ export const VisualizeResultPanel = (
 
   return (
     <FlexCol>
-      <div>ket qua here:</div>
       {
         data ? data.map ((timetable: Timetable, index: number) => {
           // const timeTableAdapted = adaptToTable(timetable)
