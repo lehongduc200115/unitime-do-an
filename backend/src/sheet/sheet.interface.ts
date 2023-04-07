@@ -16,7 +16,6 @@ interface IRow {
     | IStudent
     | IEnrollment
     | IClass
-    | ISubject
     | INewClass
     | IPeriod;
   sheetName: string;

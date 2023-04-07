@@ -2,6 +2,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 import { ClassType, Status } from "../common/enum";
 
 export interface ISubject {
+  id: string;
   name: string;
   department: string;
   numLabHours: number;
