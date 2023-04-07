@@ -168,11 +168,12 @@ export default function Test() {
   return <div>
     input file here: <input type="file" id="input" onChange={handleOnChange} />
 
-    <p>result goes here: {JSON.stringify(result)}</p>
-    <p>beResponse goes here: {JSON.stringify(backendResponse)}</p>
+    {/* <p>result goes here: {JSON.stringify(result)}</p>
+    <p>beResponse goes here: {JSON.stringify(backendResponse)}</p> */}
     {
       (backendResponse && backendResponse.data && backendResponse.data.status === "success")
-        ? (<VisualizeResultPanel visualizeData={backendResponse.data.data.result} />)
+        // ? (JSON.stringify(backendResponse))
+        ? (<VisualizeResultPanel {...backendResponse.data} />)
         : ""
     }
 

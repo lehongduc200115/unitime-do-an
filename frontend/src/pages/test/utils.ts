@@ -1,4 +1,4 @@
-export default (listObject: {
+export const xlsxParser = (listObject: {
   point: number,
   classes: Object[]
 }[]) => {
@@ -23,4 +23,8 @@ export default (listObject: {
       point: object.point
     }
   });
+}
+
+export const resultPrinter = (result: any) => {
+  console.log(JSON.stringify(result));
 }
