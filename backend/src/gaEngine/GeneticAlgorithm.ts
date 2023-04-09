@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 // Generate a random number in range [from, to)
 export const randInt = (from: number, to: number) => {
   return Math.floor(Math.random() * (to - from) + from);
@@ -134,7 +136,7 @@ export class GeneticAlgorithm {
       this.generation = generation;
       this.mutationRate = mutationRate;
       this.maxPopulationSize = maxPopulationSize;
-      this.population = initialPopulation;
+      this.population = _.cloneDeep(initialPopulation);
       this.fitness = fitness;
       this.customSelectParents = selection;
       this.customCrossover = crossover;
@@ -146,14 +148,15 @@ export class GeneticAlgorithm {
    * 
    * @returns The final population
    */
-  public run = () => {
+  public run = (generationDump?: (population: Entity[], generationLeft: number) => void) => {
       // Main loop
+      this.population = [];
       let loop = Math.max(1, this.generation);
       while (true) {
           // Generate population
           this.spawnPopulation();
           
-          console.log(`${loop} generation left`);
+          generationDump?.(this.population, loop);
           // Early stopping condition satisfied?
           if (loop <= 0 || this.earlyStop?.(this.population)) {
               break;

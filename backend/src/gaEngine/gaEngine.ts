@@ -105,7 +105,7 @@ class EngineInput implements IEngineInput {
                 id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
-                activeClasses: new Array(7).fill(new Array(this.periods.length).fill(undefined)),
+                activeClasses: [],
             } as IEngineInputInstructor;
         });
     }
@@ -129,7 +129,7 @@ class EngineInput implements IEngineInput {
                 type: rowItem.classType,
                 capacity: parseInt(rowItem.capacity),
                 coord: new Coord(rowItem.label),
-                activeClasses: new Array(7).fill(new Array(this.periods.length).fill(undefined)),
+                activeClasses: [],
             } as IEngineInputRoom;
         });
     }
@@ -140,7 +140,7 @@ class EngineInput implements IEngineInput {
                 id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
-                activeClasses: new Array(7).fill(new Array(this.periods.length).fill(undefined)),
+                activeClasses: [],
             } as IEngineInputStudent;
         });
     }
@@ -217,14 +217,17 @@ class EngineInput implements IEngineInput {
             let maxI = this.periods.findIndex((period: IEngineInputPeriod) => {
                 return period.id === rowItem.endPeriod.toString();
             });
-            maxI += 1;
-            let i = this.periods.findIndex((period: IEngineInputPeriod) => {
+            const minI = this.periods.findIndex((period: IEngineInputPeriod) => {
                 return period.id === rowItem.startPeriod.toString();
             });
-            for (; i < maxI; ++i) {
-                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay]][i] = classI;
-                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay]][i] = classI;
+            for (let i = minI; i <= maxI; ++i) {
+                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || []
+                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
+                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || [];
+                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
             }
+            console.log(`Class ${classI}, ${minI}-${maxI}`);
+            console.log(JSON.stringify(this.rooms[0].activeClasses));
             
             return {
                 id: rowItem.id.toString(),
@@ -232,7 +235,7 @@ class EngineInput implements IEngineInput {
                 subjectI: subjectI,
                 instructorI: instructorI,
                 roomI: roomI,
-                weekday: EWeekday[rowItem.weekDay],
+                weekday: EWeekday[rowItem.weekDay.toString()],
                 startPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
                     return period.id === rowItem.startPeriod.toString();
                 }),
@@ -254,6 +257,7 @@ class EngineInput implements IEngineInput {
                     return student.id === rowItem.studentId.toString();
                 });
                 for (let i = currClassItem!.startPeriod; i <= currClassItem!.endPeriod; ++i) {
+                    this.students[studentI].activeClasses[currClassItem!.weekday] = this.students[studentI].activeClasses[currClassItem!.weekday] || [];
                     this.students[studentI].activeClasses[currClassItem!.weekday][i] = currClassI;
                 }
             } else {
@@ -270,70 +274,8 @@ class EngineInput implements IEngineInput {
 }
 let engineInput: EngineInput;
 
-class EngineOutput {
-    result: {
-        id: string,
-        subject: string,
-        type: string,
-        capacity: number,
-        weekday: string,
-        period: string,
-        time: string,
-    }[][];
-
-    constructor(engineInput: EngineInput, engineResult: Entity[]) {
-        this.result = [];
-        engineResult.forEach((entity: Entity, suggestionI: number) => {
-            this.result[suggestionI] = [];
-            let maxI = engineInput.newClasses.length;
-            // Accumulate gene result
-            let extendedInput = {
-                rooms: [],
-                instructors: [],
-            }
-
-            for (let newClassI = 0; newClassI < maxI; ++newClassI) {
-                const roomI = entity.chromosome[newClassI] % engineInput.rooms.length;  // RoomI
-                const gene = entity.chromosome[newClassI + maxI];                       // instructorI & weekday & startperiodI
-                const instructorI = Math.floor(gene / (7 * engineInput.periods.length)) % engineInput.newClasses[newClassI].instructors.length;
-                const weekday = gene % (7 * engineInput.periods.length) % 7;
-                const startPeriodI = Math.floor(gene % (7 * engineInput.periods.length) / 7); // Raw iteration; modulus to max possible length of each prefered period range for usable iteration
-        
-                let geneEval = classGeneEvaluate({
-                    newClassI: newClassI,
-                    weekday: weekday,
-                    startPeriodI: startPeriodI,
-                    roomI: roomI,
-                    instructorI: instructorI,
-                    extendedInput: extendedInput,
-                });
-
-                // Parsed class
-                let refClass = {
-                    id: engineInput.newClasses[newClassI].id,
-                    subject: engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name,
-                    type: engineInput.newClasses[newClassI].type,
-                    capacity: engineInput.newClasses[newClassI].entrants,
-                    weekday: "N/A",
-                    period: "N/A",
-                    time: "N/A",
-                }
-                // Acceptable class
-                if (geneEval > 0) {
-                    const resWeekday: string = Object.keys(EWeekday).find((key) => EWeekday[key] === weekday)!;
-                    refClass.weekday = resWeekday;
-                    const startPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI];
-                    const endPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI + engineInput.newClasses[newClassI].period - 1];
-                    refClass.period = `${startPeriod.id}-${endPeriod.id}`
-                    refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`
-                }
-                this.result[suggestionI].push(refClass);
-            }
-        });
-    }
-}
-
 const classGeneEvaluate = ({
+        score,
         newClassI,
         weekday,
         startPeriodI,
@@ -341,6 +283,7 @@ const classGeneEvaluate = ({
         instructorI,
         extendedInput,
     }: {
+        score: number,
         weekday: number,
         startPeriodI: number,
         newClassI: number,
@@ -351,7 +294,6 @@ const classGeneEvaluate = ({
             instructors: number[][][],
         }
     }) => {
-    let score = 1;
 
     do {
         let maxI = 0; // Maximum value for iterative variable
@@ -383,9 +325,9 @@ const classGeneEvaluate = ({
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
         for (let periodI = startPeriodI; periodI < maxI; ++periodI) {
             if (
-                engineInput.rooms[roomI].activeClasses[weekday][periodI] !== undefined ||
+                engineInput.rooms[roomI].activeClasses[weekday]?.[periodI] !== undefined ||
                 extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== undefined ||
-                engineInput.instructors[instructorI].activeClasses[weekday][periodI] !== undefined ||
+                engineInput.instructors[instructorI].activeClasses[weekday]?.[periodI] !== undefined ||
                 extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== undefined
             ) {
                 isNotFit = true;
@@ -410,8 +352,9 @@ const classGeneEvaluate = ({
         // Assume that instructor only teach in 1 branch at a day
         maxI = engineInput.periods.length;
         for (let i = 0; i < maxI; ++i) {
-            const proxClassI = engineInput.instructors[instructorI].activeClasses[weekday][i];
-            if (proxClassI !== undefined) {
+            const proxClassI = engineInput.instructors[instructorI].activeClasses[weekday]?.[i] ||
+                extendedInput.instructors[instructorI]?.[weekday]?.[i];   
+            if (proxClassI != null) {
                 const proxRoomCoord = engineInput.rooms[engineInput.timetable[proxClassI].roomI].coord;
                 if (engineInput.rooms[roomI].coord.distanceTo(proxRoomCoord) > 0) {
                     isNotFit = true;
@@ -437,23 +380,95 @@ const classGeneEvaluate = ({
     return score;
 }
 
+class EngineOutput {
+    result: {
+        id: string,
+        subject: string,
+        instructor: string,
+        type: string,
+        entrants: number,
+        room: string,
+        weekday: string,
+        period: string,
+        time: string,
+    }[][];
+
+    constructor(engineInput: EngineInput, engineResult: Entity[]) {
+        this.result = [];
+        engineResult.forEach((entity: Entity, suggestionI: number) => {
+            this.result[suggestionI] = [];
+            let maxI = engineInput.newClasses.length;
+            // Accumulate gene result
+            let extendedInput = {
+                rooms: [],
+                instructors: [],
+            }
+            let score = 1;
+
+            for (let newClassI = 0; newClassI < maxI; ++newClassI) {
+                const roomI = entity.chromosome[newClassI] % engineInput.rooms.length;  // RoomI
+                const gene = entity.chromosome[newClassI + maxI];                       // instructorI & weekday & startperiodI
+                const instructorI = Math.floor(gene / (7 * engineInput.periods.length)) % engineInput.newClasses[newClassI].instructors.length;
+                const weekday = gene % (7 * engineInput.periods.length) % engineInput.newClasses[newClassI].preferedWeekday.length;
+                const startPeriodI = Math.floor(gene % (7 * engineInput.periods.length) / 7); // Raw iteration; modulus to max possible length of each prefered period range for usable iteration
+        
+                let geneEval = classGeneEvaluate({
+                    score: score,
+                    newClassI: newClassI,
+                    weekday: weekday,
+                    startPeriodI: startPeriodI,
+                    roomI: roomI,
+                    instructorI: instructorI,
+                    extendedInput: extendedInput,
+                });
+                score += geneEval;
+
+                // Parsed class
+                let refClass = {
+                    id: engineInput.newClasses[newClassI].id,
+                    subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
+                    instructor: `${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].id} - ${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].name}`,
+                    type: engineInput.newClasses[newClassI].type,
+                    entrants: engineInput.newClasses[newClassI].entrants,
+                    room: "N/A",
+                    weekday: "N/A",
+                    period: "N/A",
+                    time: "N/A",
+                }
+                // Acceptable class
+                if (geneEval > 0) {
+                    refClass.room = engineInput.rooms[roomI].id;
+                    const resWeekday: string = Object.keys(EWeekday).find((key) => EWeekday[key] === weekday)!;
+                    refClass.weekday = resWeekday;
+                    const startPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI];
+                    const endPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI + engineInput.newClasses[newClassI].period - 1];
+                    refClass.period = `${startPeriod.id}-${endPeriod.id}`
+                    refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`
+                }
+                this.result[suggestionI].push(refClass);
+            }
+        });
+    }
+}
+
 const classFitness = (entity: Entity) => {
-    let score = 0;
     // Accumulate gene result
     let extendedInput = {
         rooms: [],
         instructors: [],
     }
+    let score = 1;
 
     const maxI = engineInput.newClasses.length;
     for (let newClassI = 0; newClassI < maxI; ++newClassI) {
         const roomI = entity.chromosome[newClassI] % engineInput.rooms.length;  // RoomI
         const gene = entity.chromosome[newClassI + maxI];                       // instructorI & weekday & startperiodI
         const instructorI = Math.floor(gene / (7 * engineInput.periods.length)) % engineInput.newClasses[newClassI].instructors.length;
-        const weekday = gene % (7 * engineInput.periods.length) % 7;
+        const weekday = gene % (7 * engineInput.periods.length) % engineInput.newClasses[newClassI].preferedWeekday.length;
         const startPeriodI = Math.floor(gene % (7 * engineInput.periods.length) / 7); // Raw iteration; modulus to max possible length of each prefered period range for usable iteration
 
         let geneEval = classGeneEvaluate({
+            score: score,
             newClassI: newClassI,
             weekday: weekday,
             startPeriodI: startPeriodI,
@@ -479,9 +494,9 @@ export const engine = (input: any) => {
     let engineClassConfig: any = {
         chromosomeLength: engineInput.newClasses.length * 2,
         geneCount: engineInput.rooms.length,
-        generation: 100,
+        generation: 5000,
         mutationRate: 0.01,
-        maxPopulationSize: 20,
+        maxPopulationSize: 50,
         fitness: classFitness,
         eliteRate: 0.1,
         // initialPopulation: [
@@ -529,19 +544,44 @@ export const engine = (input: any) => {
         return [firstChild, secondChild];
     }
     console.log("-- Done!");
-    
     // -- Run engine
-    const topCount = 5;
+    const topResultCount = 5;
     let bestRes: Entity[] = [];     // Store best results from each run
     let engine = new GeneticAlgorithm();
     engine.configurate(engineClassConfig);
     // Find class 
-    for (let i = 0; i < topCount; ++i) {
-        bestRes.push(engine.run()[0]);
+    for (let i = 0; i < topResultCount; ++i) {
+        const dump = (_: any, loop: any) => {
+            if (loop % 1000 == 0) {
+                console.log(`${(topResultCount-i-1)*engineClassConfig.generation + loop} iteration left`);
+            }
+        }
+        bestRes.push(engine.run(dump)[0]);
     }
 
     // Parse engine result to readable result
     let engineOutput = new EngineOutput(engineInput, bestRes);
+
+
+    // console.log(engineOutput.result.map((res, index) => {
+    //     let point = 0;
+    //     res.forEach((e) => {
+    //         point += e.period !== "N/A" ? 1 : 0;
+    //     })
+    //     return {
+    //         point: point,
+    //         classes: res.map((val) => JSON.stringify(val)),
+    //         chromosome: JSON.stringify(bestRes[index].chromosome),
+    //     };
+    // }));
+
+    /*
+    Room1 (4): 2[5-6, 10-12], 3[7-12], 4[2-4, 9-12] 
+    Room2 (3): 2[2-3], 3[2-6, 7-12], 4[4-6, 7-8, 11-12]
+    Room3 (3): 2[2-6], 3[7-12], 4[4-6, 7-8]
+    */
+
+    console.log(JSON.stringify(engineInput.instructors[1].activeClasses));
 
     return {
         result: engineOutput.result,
