@@ -11,6 +11,7 @@ import { BKAlert } from 'src/components/Alert/BKAlert';
 import { BKTable } from 'src/components/Table/BKTable';
 import { clone } from 'lodash';
 import {BKTab} from 'src/components';
+import Timetable from './Timetable/Timetable';
 
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
@@ -116,7 +117,8 @@ export default function Test() {
   return <div>
     input file here: <input type="file" id="input" onChange={handleOnChange} />
 
-    <BKTab tabLabels={["Imported Data", "Solutions"]}>
+    <BKTab tabLabels={["Test playground", "Imported Data", "Solutions"]}>
+      <Timetable timetableProps={backendResponse}></Timetable>
       <div>
         {
           tables.map((table: any, index: number) => {
@@ -143,6 +145,7 @@ export default function Test() {
           (backendResponse && backendResponse.data && backendResponse.data.status === "success")
             // ? (JSON.stringify(backendResponse))
             ? (<VisualizeResultPanel {...backendResponse.data} />)
+            // ? <Timetable timetableProps={backendResponse.data.data.result[0]}></Timetable>
             : ""
         }
       </div>

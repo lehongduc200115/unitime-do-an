@@ -1,0 +1,67 @@
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background-color: #f5f5f5;
+}
+
+td {
+  height: 80px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.lec-cell {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.lab-cell {
+  background-color: #c3e6cb;
+  font-weight: bold;
+}
+
+.timetable-cell {
+  background-color: #ffffff;
+  font-weight: normal;
+}
+
+/* for legend only */
+.legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.legend > div {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+
+.lec {
+  background-color: #f2f2f2;
+  color: black;
+}
+
+.lab {
+  background-color: #c3e6cb;
+  color: black;
+}

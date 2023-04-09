@@ -1,6 +1,7 @@
 import * as React from "react";
 import { FlexCol } from "src/components/FlexCol/FlexCol";
 import { BKTable } from "src/components/Table/BKTable";
+import TimetableView from "../Timetable/Timetable";
 // import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
 // import { resultPrinter } from "../utils"
 interface IClass {
@@ -43,17 +44,20 @@ export const VisualizeResultPanel = (
         data ? data.map ((timetable: Timetable, index: number) => {
           // const timeTableAdapted = adaptToTable(timetable)
           return timetable ? 
-            <BKTable 
-              name={`Solution: ${index}`} 
-              columns={Object.keys(timetable[0])} 
-              data={timetable} 
-              setData={(tableData: any) => {
-                // console.log(`den day 2: ${JSON.stringify(tableData)}`)
-                const clonedTable = JSON.parse(JSON.stringify(data));
-                clonedTable[index].rows = tableData;
-                // console.log(`den day: ${JSON.stringify(clonedTable[index])}`)
-                setData(clonedTable);
-              }}
+            // <BKTable 
+            //   name={`Solution: ${index}`} 
+            //   columns={Object.keys(timetable[0])} 
+            //   data={timetable} 
+            //   setData={(tableData: any) => {
+            //     // console.log(`den day 2: ${JSON.stringify(tableData)}`)
+            //     const clonedTable = JSON.parse(JSON.stringify(data));
+            //     clonedTable[index].rows = tableData;
+            //     // console.log(`den day: ${JSON.stringify(clonedTable[index])}`)
+            //     setData(clonedTable);
+            //   }}
+            // />            
+            <TimetableView 
+              timetableProps={timetable as any} 
             />
           : ""
         }) : ""
