@@ -88,23 +88,21 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
   );
 };
 
-const TimetableView = (props: {timetableProps?: TimetableRowProps[]}) => {
-  const {timetableProps} = props
+const TimetableView = (props: { timetableProps?: TimetableRowProps[] }) => {
+  const { timetableProps } = props
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timetable, setTimetable] = useState<TimetableRowProps[]>(defaultTimetable);
   // const [parsedTimetable, setParsedTimetable] = useState(defaultTimetable);
 
   React.useEffect(() => {
-    if (timetableProps)
+    if (timetableProps && timetableProps.length !== 0)
       setTimetable(timetableProps)
   }, [timetableProps])
 
-  const parsedTimetable = Array.isArray(timetable) ? 
-  timetable.map((it) => {
+  const parsedTimetable = (timetable || defaultTimetable).map((it) => {
     const temp = it.events.flatMap(event => {
       return timeRangeParser(event.time).map(time => {
-        const cloned = JSON.parse(JSON.stringify(event))
-        // const cloned = _.clone(subject);
+        const cloned = _.clone(event);
         if (cloned) cloned.time = time;
         return cloned;
       })
@@ -113,7 +111,10 @@ const TimetableView = (props: {timetableProps?: TimetableRowProps[]}) => {
     it.events = JSON.parse(JSON.stringify(temp))
 
     return it;
-  }) : []
+  })
+
+  console.log(`timetable: ${JSON.stringify(timetable)}`)
+  console.log(`parsedTimetable: ${JSON.stringify(parsedTimetable)}`)
 
   return (
     <div>
@@ -131,20 +132,20 @@ const TimetableView = (props: {timetableProps?: TimetableRowProps[]}) => {
         </thead>
         <tbody>
           {
-            constants.WEEK_DAYS.map((weekday, i) => {
-              if (!weekday) return
-              const day = parsedTimetable.find(d => {
+            parsedTimetable.length !== 0 ?
+              (constants.WEEK_DAYS.map((weekday, i) => {
+                const day = parsedTimetable.find(d => {
                   console.log(`found: ${JSON.stringify(d)}`)
                   return d.day === i.toString()
                 }) || { day: weekday, events: [] };
 
-              console.log(`day: ${JSON.stringify(day)}`)
-              day.day = weekday
-              // const day = timetable.find(d => constants.WEEK_DAYS[parseInt(d.day)]) || { day: weekday, events: [] };
-              return (
-                <TimetableRow key={i} day={day.day} events={day.events} />
-              );
-            })
+                console.log(`day: ${JSON.stringify(day)}`)
+                day.day = weekday
+                // const day = timetable.find(d => constants.WEEK_DAYS[parseInt(d.day)]) || { day: weekday, events: [] };
+                return (
+                  <TimetableRow key={i} day={day.day} events={day.events} />
+                );
+              })) : ""
           }
         </tbody>
       </table>
