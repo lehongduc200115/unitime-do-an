@@ -25,7 +25,6 @@ export interface IEngineInput {
     students: IEngineInputStudent[],
     subjects: IEngineInputSubject[],
     timetable: IEngineInputClass[],
-    modifiedSubjects: number[],
 }
 
 export interface IEngineInputClass {
@@ -37,6 +36,7 @@ export interface IEngineInputClass {
     weekday: number,        // Parsed from EWeekday
     startPeriod: number,    // Use engine's index
     endPeriod: number,      // Use engine's index
+    students: number[]      // Use engine's index
 }
 
 export interface IEngineInputInstructor {
@@ -91,3 +91,15 @@ export interface IEngineInputSubject {
     newClasses: number[],   // Use engine's index
 }
 
+export interface IEngineOutputResult {
+    id: string,
+    subject: string,
+    instructor: string,
+    type: string,
+    entrants: number,
+    room: string,
+    weekday: string,
+    period: string,
+    time: string,
+    capableStudents: any[],
+}

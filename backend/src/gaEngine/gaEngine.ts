@@ -1,7 +1,7 @@
 import _ from "lodash";
 
 import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
-import { EWeekday, ICoord, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject } from "./type";
+import { EWeekday, ICoord, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject, IEngineOutputResult } from "./type";
 
 
 class Coord implements ICoord {
@@ -26,14 +26,13 @@ class Coord implements ICoord {
 }
 
 class EngineInput implements IEngineInput {
-    instructors: IEngineInputInstructor[] = [];
-    newClasses: IEngineInputNewClass[] = [];
-    periods: IEngineInputPeriod[] = [];
-    rooms: IEngineInputRoom[] = [];
-    students: IEngineInputStudent[] = [];
-    subjects: IEngineInputSubject[] = [];
-    timetable: IEngineInputClass[] = [];
-    modifiedSubjects: number[] = [];
+    instructors: IEngineInputInstructor[];
+    newClasses: IEngineInputNewClass[];
+    periods: IEngineInputPeriod[];
+    rooms: IEngineInputRoom[];
+    students: IEngineInputStudent[];
+    subjects: IEngineInputSubject[];
+    timetable: IEngineInputClass[];
 
     constructor(input: any[]) {
         let enrollmentInput: any[] = [];
@@ -93,9 +92,9 @@ class EngineInput implements IEngineInput {
         this.convertStudent(studentInput);
         this.convertSubject(subjectInput);
         // Phase 2 parsing - refined input (ordered)
-        this.convertClasses(newClassInput);
         this.convertTimetable(timetableInput);
         this.convertEnrollment(enrollmentInput);
+        this.convertClasses(newClassInput);
     }
 
     // Phase 1 parser - basic input (ordered)
@@ -105,7 +104,7 @@ class EngineInput implements IEngineInput {
                 id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
-                activeClasses: [],
+                activeClasses: new Array(7),
             } as IEngineInputInstructor;
         });
     }
@@ -129,7 +128,7 @@ class EngineInput implements IEngineInput {
                 type: rowItem.classType,
                 capacity: parseInt(rowItem.capacity),
                 coord: new Coord(rowItem.label),
-                activeClasses: [],
+                activeClasses: new Array(7),
             } as IEngineInputRoom;
         });
     }
@@ -140,7 +139,7 @@ class EngineInput implements IEngineInput {
                 id: rowItem.id.toString(),
                 name: rowItem.name,
                 department: rowItem.department,
-                activeClasses: [],
+                activeClasses: new Array(7),
             } as IEngineInputStudent;
         });
     }
@@ -160,17 +159,91 @@ class EngineInput implements IEngineInput {
                         });
                     }),
                 classes: [],
-                newStudents: [],
                 newClasses: [],
+                newStudents: [],
             } as IEngineInputSubject;
         });
     }
 
     // Phase 2 parser - refined input (ordered)
+    convertTimetable(input: any[]) {
+        this.timetable = input.map((rowItem: any, classI: number) => {
+            const instructorI = this.instructors.findIndex((instructor: IEngineInputInstructor) => instructor.id === rowItem.instructorId.toString());
+            const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => subject.id === rowItem.subjectId.toString());
+            const roomI = this.subjects.findIndex((room: IEngineInputSubject) => room.id === rowItem.roomId.toString());
+            // Create active class for instructors & rooms
+            let maxI = this.periods.findIndex((period: IEngineInputPeriod) => {
+                return period.id === rowItem.endPeriod.toString();
+            });
+            const minI = this.periods.findIndex((period: IEngineInputPeriod) => {
+                return period.id === rowItem.startPeriod.toString();
+            });
+            for (let i = minI; i <= maxI; ++i) {
+                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || new Array(this.periods.length)
+                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
+                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || new Array(this.periods.length);
+                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
+            }
+            // Class belongs to subject
+            this.subjects[subjectI].classes.push(classI);
+            
+            return {
+                id: rowItem.id.toString(),
+                name: rowItem.name,
+                subjectI: subjectI,
+                instructorI: instructorI,
+                roomI: roomI,
+                weekday: EWeekday[rowItem.weekDay.toString()],
+                startPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
+                    return period.id === rowItem.startPeriod.toString();
+                }),
+                endPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
+                    return period.id === rowItem.endPeriod.toString();
+                }),
+                students: [],
+            } as IEngineInputClass;
+        });
+    }
+
+    convertEnrollment(input: any[]) {
+        input.forEach((rowItem: any) => {
+            const subjectId = rowItem.subjectId.toString();
+            const classId = rowItem.classId?.toString();
+            const studentId = rowItem.studentId.toString();
+            // Check if students have classes yet
+            if (classId != null) {
+                const classI = this.timetable.findIndex((classItem: IEngineInputClass) => {
+                    return classItem.id === classId;
+                });
+                const classItem = this.timetable[classI];
+                const studentI = this.students.findIndex((student: IEngineInputStudent) => {
+                    return student.id === studentId;
+                });
+                // Add class to student's active classes
+                for (let i = classItem.startPeriod; i <= classItem.endPeriod; ++i) {
+                    this.students[studentI].activeClasses[classItem.weekday] = this.students[studentI].activeClasses[classItem.weekday] || new Array(this.periods.length)
+                    this.students[studentI].activeClasses[classItem.weekday][i] = classI;
+                }
+                // Add student to arranged class (for scaleup class)
+                this.timetable[classI].students.push(studentI);
+            } else {
+                const studentI = this.students.findIndex((student: IEngineInputStudent) => {
+                    return student.id === studentId;
+                });
+                const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
+                    return subject.id === subjectId;
+                });
+                // Add student to enrollment list
+                this.subjects[subjectI].newStudents.push(studentI);
+            }
+        });
+    }
+
     convertClasses(input: any[]) {
         this.newClasses = input.map((rowItem: any, newClassI: number) => {
+            const subjectId = rowItem.subjectId.toString();
             const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
-                return subject.id === rowItem.id.toString();
+                return subject.id === subjectId;
             });
             this.subjects[subjectI].newClasses.push(newClassI);
             
@@ -207,72 +280,56 @@ class EngineInput implements IEngineInput {
             } as IEngineInputNewClass;
         })
     }
-
-    convertTimetable(input: any[]) {
-        this.timetable = input.map((rowItem: any, classI: number) => {
-            const instructorI = this.instructors.findIndex((instructor: IEngineInputInstructor) => instructor.id === rowItem.instructorId.toString());
-            const subjectI = this.subjects.findIndex((subject: IEngineInputSubject) => subject.id === rowItem.subjectId.toString());
-            const roomI = this.subjects.findIndex((room: IEngineInputSubject) => room.id === rowItem.roomId.toString());
-            // Create active class for instructors
-            let maxI = this.periods.findIndex((period: IEngineInputPeriod) => {
-                return period.id === rowItem.endPeriod.toString();
-            });
-            const minI = this.periods.findIndex((period: IEngineInputPeriod) => {
-                return period.id === rowItem.startPeriod.toString();
-            });
-            for (let i = minI; i <= maxI; ++i) {
-                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || []
-                this.instructors[instructorI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
-                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] = this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]] || [];
-                this.rooms[roomI].activeClasses[EWeekday[rowItem.weekDay.toString()]][i] = classI;
-            }
-            console.log(`Class ${classI}, ${minI}-${maxI}`);
-            console.log(JSON.stringify(this.rooms[0].activeClasses));
-            
-            return {
-                id: rowItem.id.toString(),
-                name: rowItem.name,
-                subjectI: subjectI,
-                instructorI: instructorI,
-                roomI: roomI,
-                weekday: EWeekday[rowItem.weekDay.toString()],
-                startPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
-                    return period.id === rowItem.startPeriod.toString();
-                }),
-                endPeriod: this.periods.findIndex((period: IEngineInputPeriod) => {
-                    return period.id === rowItem.endPeriod.toString();
-                }),
-            } as IEngineInputClass;
-        });
-    }
-
-    convertEnrollment(input: any[]) {
-        input.forEach((rowItem: any) => {
-            if (rowItem.classId !== undefined) {
-                const currClassI = this.timetable.findIndex((classItem: IEngineInputClass) => {
-                    return classItem.id = rowItem.classId.toString();
-                });
-                const currClassItem = this.timetable[currClassI];
-                const studentI = this.students.findIndex((student: IEngineInputStudent) => {
-                    return student.id === rowItem.studentId.toString();
-                });
-                for (let i = currClassItem!.startPeriod; i <= currClassItem!.endPeriod; ++i) {
-                    this.students[studentI].activeClasses[currClassItem!.weekday] = this.students[studentI].activeClasses[currClassItem!.weekday] || [];
-                    this.students[studentI].activeClasses[currClassItem!.weekday][i] = currClassI;
-                }
-            } else {
-                let currSubjectI = this.subjects.findIndex((subject: IEngineInputSubject) => {
-                    return subject.id === rowItem.subjectId.toString();
-                });
-                const studentI = this.students.findIndex((student: IEngineInputStudent) => {
-                    return student.id === rowItem.studentId.toString();
-                });
-                this.subjects[currSubjectI].newStudents.push(studentI);
-            }
-        });
-    }
 }
 let engineInput: EngineInput;
+
+// Return list of students who are capable of taking class (unassigned classes do not take into account)
+const checkCapableStudent = ({
+        weekday,
+        startPeriodI,
+        periodCount,
+        subjectI,
+        roomI,
+    }:{
+        weekday: number,
+        startPeriodI: number,
+        periodCount: number,
+        subjectI: number,
+        roomI: number,
+    }) => {
+        let ans: any[] = [];
+        const maxSubjectStudentI = engineInput.subjects[subjectI].newStudents.length;
+        const endPeriodI = startPeriodI + periodCount - 1;
+        const maxPeriodI = engineInput.periods.length;
+        
+        for (let subjectStudentI = 0; subjectStudentI < maxSubjectStudentI; ++subjectStudentI) {
+            const studentI = engineInput.subjects[subjectI].newStudents[subjectStudentI];
+            let isNotFit = false;
+
+            for (let periodI = 0; periodI < maxPeriodI; ++periodI) {
+                // Active periods
+                const activeClassI = engineInput.students[studentI].activeClasses[weekday]?.[periodI];
+                if (activeClassI != null) {
+                    if (startPeriodI <= periodI && periodI <= endPeriodI) {
+                        isNotFit = true;
+                        break;
+                    }
+                    // 
+                    const activeRoomI = engineInput.timetable[activeClassI].roomI;
+                    if (engineInput.rooms[activeRoomI].coord.distanceTo(engineInput.rooms[roomI].coord) > 0) {
+                        isNotFit = true;
+                        break;
+                    }
+                }
+            }
+            if (!isNotFit) {
+                ans.push(studentI);
+            }
+        }
+
+        return ans;
+}
+
 
 const classGeneEvaluate = ({
         score,
@@ -282,14 +339,14 @@ const classGeneEvaluate = ({
         roomI,
         instructorI,
         extendedInput,
-    }: {
+    }:{
         score: number,
         weekday: number,
         startPeriodI: number,
         newClassI: number,
         roomI: number,
         instructorI: number,
-        extendedInput: {
+        extendedInput: { // Active classes for each object, indexing: [object's index][weekday][periodI]
             rooms: number[][][],
             instructors: number[][][],
         }
@@ -325,10 +382,10 @@ const classGeneEvaluate = ({
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
         for (let periodI = startPeriodI; periodI < maxI; ++periodI) {
             if (
-                engineInput.rooms[roomI].activeClasses[weekday]?.[periodI] !== undefined ||
-                extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== undefined ||
-                engineInput.instructors[instructorI].activeClasses[weekday]?.[periodI] !== undefined ||
-                extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== undefined
+                engineInput.rooms[roomI].activeClasses[weekday]?.[periodI] != null ||
+                extendedInput.rooms[roomI]?.[weekday]?.[periodI] != null ||
+                engineInput.instructors[instructorI].activeClasses[weekday]?.[periodI] != null ||
+                extendedInput.instructors[instructorI]?.[weekday]?.[periodI] != null
             ) {
                 isNotFit = true;
                 break;
@@ -366,13 +423,26 @@ const classGeneEvaluate = ({
             score *= 0;
             break;
         }
+
+        // -- Student availability
+        const capableStudents = checkCapableStudent({
+            weekday: weekday,
+            startPeriodI: startPeriodI,
+            periodCount: engineInput.newClasses[newClassI].period,
+            subjectI: engineInput.newClasses[newClassI].subjectI,
+            roomI: roomI,
+        });
+        // TODO: check if student count meets minimum requirement
+        score += capableStudents.length;
         
         // Satisfied all hard constraints
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
         for (let periodI = startPeriodI; periodI < maxI; ++periodI) {
-            extendedInput.rooms[roomI] = new Array(7).fill(new Array(engineInput.periods.length).fill(undefined));
+            extendedInput.rooms[roomI] = extendedInput.rooms[roomI] || new Array(7);
+            extendedInput.rooms[roomI][weekday] = extendedInput.rooms[roomI][weekday] || new Array(engineInput.periods.length);
             extendedInput.rooms[roomI][weekday][startPeriodI] = newClassI;
-            extendedInput.instructors[instructorI] = new Array(7).fill(new Array(engineInput.periods.length).fill(undefined));
+            extendedInput.instructors[instructorI] = extendedInput.instructors[instructorI] || new Array(7);
+            extendedInput.instructors[instructorI][weekday] = extendedInput.instructors[instructorI][weekday] || new Array(engineInput.periods.length);
             extendedInput.instructors[instructorI][weekday][startPeriodI] = newClassI;
         }
     } while (false);
@@ -381,27 +451,18 @@ const classGeneEvaluate = ({
 }
 
 class EngineOutput {
-    result: {
-        id: string,
-        subject: string,
-        instructor: string,
-        type: string,
-        entrants: number,
-        room: string,
-        weekday: string,
-        period: string,
-        time: string,
-    }[][];
+    classResult: IEngineOutputResult[][];
 
-    constructor(engineInput: EngineInput, engineResult: Entity[]) {
-        this.result = [];
-        engineResult.forEach((entity: Entity, suggestionI: number) => {
-            this.result[suggestionI] = [];
+    constructor(engineInput: EngineInput, classResult: Entity[]) {
+        this.classResult = new Array(classResult.length);
+        classResult.forEach((entity: Entity, suggestionI: number) => {
+            this.classResult[suggestionI] = [];
             let maxI = engineInput.newClasses.length;
             // Accumulate gene result
             let extendedInput = {
-                rooms: [],
-                instructors: [],
+                rooms: new Array(engineInput.rooms.length),
+                instructors: new Array(engineInput.instructors.length),
+                students: new Array(engineInput.students.length),
             }
             let score = 1;
 
@@ -424,7 +485,7 @@ class EngineOutput {
                 score += geneEval;
 
                 // Parsed class
-                let refClass = {
+                let refClass: IEngineOutputResult = {
                     id: engineInput.newClasses[newClassI].id,
                     subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
                     instructor: `${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].id} - ${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].name}`,
@@ -434,6 +495,7 @@ class EngineOutput {
                     weekday: "N/A",
                     period: "N/A",
                     time: "N/A",
+                    capableStudents: [],
                 }
                 // Acceptable class
                 if (geneEval > 0) {
@@ -442,20 +504,31 @@ class EngineOutput {
                     refClass.weekday = resWeekday;
                     const startPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI];
                     const endPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI + engineInput.newClasses[newClassI].period - 1];
-                    refClass.period = `${startPeriod.id}-${endPeriod.id}`
-                    refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`
+                    refClass.period = `${startPeriod.id}-${endPeriod.id}`;
+                    refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`;
+                    refClass.capableStudents = checkCapableStudent({
+                        weekday: weekday,
+                        startPeriodI: startPeriodI,
+                        periodCount: engineInput.newClasses[newClassI].period,
+                        subjectI: engineInput.newClasses[newClassI].subjectI,
+                        roomI: roomI,
+                    });
+                    refClass.capableStudents = refClass.capableStudents.map((studentI: number) => {
+                        return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
+                    });
                 }
-                this.result[suggestionI].push(refClass);
+                this.classResult[suggestionI].push(refClass);
             }
         });
     }
 }
 
-const classFitness = (entity: Entity) => {
+const fitness = (entity: Entity) => {
     // Accumulate gene result
     let extendedInput = {
-        rooms: [],
-        instructors: [],
+        rooms: new Array(engineInput.rooms.length),
+        instructors: new Array(engineInput.instructors.length),
+        students: new Array(engineInput.students.length),
     }
     let score = 1;
 
@@ -494,10 +567,10 @@ export const engine = (input: any) => {
     let engineClassConfig: any = {
         chromosomeLength: engineInput.newClasses.length * 2,
         geneCount: engineInput.rooms.length,
-        generation: 5000,
+        generation: 1000,
         mutationRate: 0.01,
         maxPopulationSize: 50,
-        fitness: classFitness,
+        fitness: fitness,
         eliteRate: 0.1,
         // initialPopulation: [
         //     new Entity(10, 10, [0, 9, 1, 7, 4, 5, 0, 1, 4, 2]),
@@ -530,12 +603,12 @@ export const engine = (input: any) => {
         firstChild = new Entity({
             geneCount: engineClassConfig.geneCount,
             chromosome: firstChild,
-            calcFitness: classFitness,
+            calcFitness: fitness,
         });
         secondChild = new Entity({
             geneCount: engineClassConfig.geneCount,
             chromosome: secondChild,
-            calcFitness: classFitness,
+            calcFitness: fitness,
         });
     
         firstChild.mutate(engineClassConfig.mutationRate);
@@ -552,27 +625,22 @@ export const engine = (input: any) => {
     // Find class 
     for (let i = 0; i < topResultCount; ++i) {
         const dump = (_: any, loop: any) => {
-            if (loop % 1000 == 0) {
+            // if (loop % 1000 == 0) {
                 console.log(`${(topResultCount-i-1)*engineClassConfig.generation + loop} iteration left`);
-            }
+            // }
         }
         bestRes.push(engine.run(dump)[0]);
     }
+    console.log("-- Done!");
 
     // Parse engine result to readable result
-    let engineOutput = new EngineOutput(engineInput, bestRes);
+    console.log("Reading population...");
+    let engineOutput: EngineOutput = new EngineOutput(engineInput, bestRes);
+    console.log("-- Done!");
 
 
-    // console.log(engineOutput.result.map((res, index) => {
-    //     let point = 0;
-    //     res.forEach((e) => {
-    //         point += e.period !== "N/A" ? 1 : 0;
-    //     })
-    //     return {
-    //         point: point,
-    //         classes: res.map((val) => JSON.stringify(val)),
-    //         chromosome: JSON.stringify(bestRes[index].chromosome),
-    //     };
+    // console.log(engineInput.newClasses.map((res) => {
+    //     return JSON.stringify(res.subjectI);
     // }));
 
     /*
@@ -581,9 +649,8 @@ export const engine = (input: any) => {
     Room3 (3): 2[2-6], 3[7-12], 4[4-6, 7-8]
     */
 
-    console.log(JSON.stringify(engineInput.instructors[1].activeClasses));
-
     return {
-        result: engineOutput.result,
+        result: engineOutput.classResult,
+        // result: null,
     };
 }
