@@ -25,6 +25,7 @@ tr:nth-child(even) {
 .lec-cell {
   background-color: #f2f2f2;
   font-weight: bold;
+  border-radius: 5px; 
 }
 
 .lab-cell {
@@ -64,4 +65,52 @@ tr:nth-child(even) {
 .lab {
   background-color: #c3e6cb;
   color: black;
+}
+
+.timetable-cell {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.timetable-subject {
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.timetable-instructor {
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.timetable-entrants {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.capable-students-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  z-index: 1;
+}
+
+.capable-students-dropdown ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.capable-students-dropdown li {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.capable-students-dropdown li:hover {
+  background-color: #f6f6f6;
 }

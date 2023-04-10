@@ -19,30 +19,24 @@ const timeSlots = [
   '17:00',
 ];
 
-const defaultTimetable = [{
-  day: '2',
-  events: [
-    { time: '13:00-16:00', subject: 'Math', instructor: 'John', classType: 'lec', entrants: 30 },
-    { time: '9:00-12:00', subject: 'Science', instructor: 'Jane', classType: 'lab', entrants: 20 },
-    { time: '15:00-17:00', subject: 'History', instructor: 'Mike', classType: 'lec', entrants: 35 },
-  ],
-},
-{
-  day: '3',
-  events: [
-    { time: '12:00-14:00', subject: 'English', instructor: 'Amy', classType: 'lab', entrants: 25 },
-    { time: '15:00-17:00', subject: 'Physics', instructor: 'David', classType: 'lec', entrants: 40 },
-  ],
-},
+const defaultTimetable = [
+  { weekday: '2', time: '13:00-16:00', subject: 'Math', instructor: 'John', type: 'lec', entrants: 30 },
+  { weekday: '2', time: '9:00-12:00', subject: 'Science', instructor: 'Jane', type: 'lab', entrants: 20 },
+  { weekday: '2', time: '15:00-17:00', subject: 'History', instructor: 'Mike', type: 'lec', entrants: 35 },
+  { weekday: '3', time: '12:00-14:00', subject: 'English', instructor: 'Amy', type: 'lab', entrants: 25 },
+  { weekday: '3', time: '15:00-17:00', subject: 'Physics', instructor: 'David', type: 'lec', entrants: 40 },
 ];
 
 
 interface TimetableCellProps {
+  id?: string;
   time: string;
+  weekday?: string;
   subject?: string;
   instructor?: string;
-  classType?: string;
+  type?: string;
   entrants?: number;
+  capableStudents?: string[];
 }
 
 interface TimetableRowProps {
@@ -50,26 +44,49 @@ interface TimetableRowProps {
   events: TimetableCellProps[];
 }
 
-const TimetableCell = ({ time, subject, instructor, classType, entrants }: TimetableCellProps) => {
-  const cellClass = classType ?
-    (classType === 'lec' ? 'lec-cell' : 'lab-cell')
+const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }: TimetableCellProps) => {
+  const cellClass = type ?
+    (type === 'lec' ? 'lec-cell' : 'lab-cell')
     : 'timetable-cell'
     ;
+  const [showCapableStudents, setShowCapableStudents] = useState(false);
 
   return (
     <td className={cellClass}>
-      {/* <div>{time}</div> */}
-      <div>{subject}</div>
-      <div>{instructor}</div>
-      <div>{entrants ? `Size: ${entrants}` : ""}</div>
+      {subject && (
+        <div className="timetable-subject">{subject}</div>
+      )}
+      {instructor && (
+        <div className="timetable-instructor">{instructor}</div>
+      )}
+      {entrants && (
+        <div className="timetable-entrants">{entrants ? `Size: ${entrants}` : ""}</div>
+      )}
+      {capableStudents && capableStudents.length > 0 && (
+        <>
+          <button onClick={() => setShowCapableStudents(!showCapableStudents)}>
+            {showCapableStudents ? "Hide" : "Show"}
+          </button>
+          {showCapableStudents && (
+            <div className="capable-students-dropdown">
+              <ul>
+                {capableStudents.map((student, index) => (
+                  <li key={index}>{student}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
     </td>
   );
 };
 
 const TimetableRow = ({ day, events }: TimetableRowProps) => {
   const eventMap: { [time: string]: TimetableCellProps } = {};
-  events.forEach(event => {
-    eventMap[event.time] = event;
+
+  events.forEach(cell => {
+    eventMap[cell.time] = cell
   });
 
   console.log(`events: ${JSON.stringify(eventMap)}`)
@@ -88,10 +105,10 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
   );
 };
 
-const TimetableView = (props: { timetableProps?: TimetableRowProps[] }) => {
+const TimetableView = (props: { timetableProps?: TimetableCellProps[] }) => {
   const { timetableProps } = props
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [timetable, setTimetable] = useState<TimetableRowProps[]>(defaultTimetable);
+  const [timetable, setTimetable] = useState<TimetableCellProps[]>(defaultTimetable);
   // const [parsedTimetable, setParsedTimetable] = useState(defaultTimetable);
 
   React.useEffect(() => {
@@ -99,18 +116,12 @@ const TimetableView = (props: { timetableProps?: TimetableRowProps[] }) => {
       setTimetable(timetableProps)
   }, [timetableProps])
 
-  const parsedTimetable = (timetable || defaultTimetable).map((it) => {
-    const temp = it.events.flatMap(event => {
-      return timeRangeParser(event.time).map(time => {
-        const cloned = _.clone(event);
-        if (cloned) cloned.time = time;
-        return cloned;
-      })
+  const parsedTimetable = (timetable || defaultTimetable).flatMap((it) => {
+    return timeRangeParser(it.time).map(time => {
+      const cloned = _.clone(it);
+      if (cloned) cloned.time = time;
+      return cloned;
     })
-
-    it.events = JSON.parse(JSON.stringify(temp))
-
-    return it;
   })
 
   console.log(`timetable: ${JSON.stringify(timetable)}`)
@@ -134,25 +145,21 @@ const TimetableView = (props: { timetableProps?: TimetableRowProps[] }) => {
           {
             parsedTimetable.length !== 0 ?
               (constants.WEEK_DAYS.map((weekday, i) => {
-                const day = parsedTimetable.find(d => {
+                if (weekday === "") return;
+
+                const day = parsedTimetable.filter(d => {
                   console.log(`found: ${JSON.stringify(d)}`)
-                  return d.day === i.toString()
-                }) || { day: weekday, events: [] };
+                  return d.weekday === i.toString()
+                }) || [];
 
                 console.log(`day: ${JSON.stringify(day)}`)
-                day.day = weekday
-                // const day = timetable.find(d => constants.WEEK_DAYS[parseInt(d.day)]) || { day: weekday, events: [] };
                 return (
-                  <TimetableRow key={i} day={day.day} events={day.events} />
+                  <TimetableRow key={i} day={weekday} events={day} />
                 );
               })) : ""
           }
         </tbody>
       </table>
-      <div className="legend">
-        <div className="lec">Lecture</div>
-        <div className="lab">Lab</div>
-      </div>
     </div>
   );
 };
