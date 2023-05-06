@@ -13,6 +13,8 @@ import { clone } from 'lodash';
 import {BKTab} from 'src/components';
 import Timetable from './Timetable/Timetable';
 
+import { Notification } from 'src/components/Notification/Notification';
+
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
   let sheets: any = helpers.getHeadersFromSchema();
