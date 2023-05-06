@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FlexCol } from "src/components/FlexCol/FlexCol";
-import { BKTable } from "src/components/Table/BKTable";
+// import { BKTable } from "src/components/Table/BKTable";
 import TimetableView from "../Timetable/Timetable";
 import { Typography } from "@mui/material";
 

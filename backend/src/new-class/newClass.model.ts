@@ -7,6 +7,9 @@ export interface INewClass {
   subjectId: string;
   preferedWeekDay: string;
   preferedPeriod: string;
+  preferedRoom: string;
+  preferedCampus: string;
+  unrestricted: boolean;
   entrants: number;
   capacity: number;
   period?: number;
@@ -37,6 +40,16 @@ const newClassSchema: Schema<NewClassDocument> = new Schema(
     },
     preferedPeriod: {
       type: String,
+    },
+    preferedRoom: {
+      type: String,
+    },
+    preferedCampus: {
+      type: String,
+    },
+    unrestricted: {
+      type: Boolean,
+      default: false,
     },
     capacity: {
       type: Number,
