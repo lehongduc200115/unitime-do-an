@@ -10,10 +10,11 @@ import { Button } from '@mui/material';
 import { BKAlert } from 'src/components/Alert/BKAlert';
 import { BKTable } from 'src/components/Table/BKTable';
 import { clone } from 'lodash';
-import {BKTab} from 'src/components';
+import { BKTab } from 'src/components';
 import Timetable from './Timetable/Timetable';
 
 import { Notification } from 'src/components/Notification/Notification';
+import Stepper from './Stepper';
 
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)
@@ -104,7 +105,7 @@ export default function Test() {
   }
 
   const [backendResponse, setBackendresponse] = React.useState<any>([])
-  const [backendSolvingStatus, setBackendSolvingStatus] = React.useState<any>(false)
+  // const [backendSolvingStatus, setBackendSolvingStatus] = React.useState<any>(false)
   // const [importResult, setImportResult] = React.useState(null)
   // const [fetchResult, setFetchResult] = React.useState(null)
   const [openAlert, setOpenAlert] = React.useState(false)
@@ -117,11 +118,9 @@ export default function Test() {
   }[]>([]);
 
   return <div>
-    input file here: <input type="file" id="input" onChange={handleOnChange} />
-
-    <BKTab tabLabels={["Test playground", "Imported Data", "Solutions"]}>
+    <BKTab tabLabels={["Test playground", "Stepper", "Solutions"]}>
       <Timetable timetableProps={backendResponse}></Timetable>
-      <div>
+      {/* <div>
         {
           tables.map((table: any, index: number) => {
             console.log(`$$$ ${table.sheetName} ${JSON.stringify(table.columns)} ${JSON.stringify(table.rows)}`)
@@ -141,7 +140,8 @@ export default function Test() {
             );
           })
         }
-      </div>
+      </div> */}
+      {(<Stepper></Stepper>)}
       <div>
         {
           (backendResponse && backendResponse.data && backendResponse.data.status === "success")
