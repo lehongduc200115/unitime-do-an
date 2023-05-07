@@ -1,19 +1,13 @@
 import axios from 'axios';
 import * as React from 'react';
 import helpers from 'src/helpers/helpers';
-import { IReaderResult } from '../../helpers/helpers';
 import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
-import { VisualizePanel } from './VisualizePanel/VisualizePanel';
 import { VisualizeResultPanel } from './VisualizeResultPanel/VisualizeResultPanel';
-import { Button } from '@mui/material';
 import { BKAlert } from 'src/components/Alert/BKAlert';
-import { BKTable } from 'src/components/Table/BKTable';
-import { clone } from 'lodash';
 import { BKTab } from 'src/components';
 import Timetable from './Timetable/Timetable';
 
-import { Notification } from 'src/components/Notification/Notification';
 import Stepper from './Stepper';
 
 const visualizeData = (importedData: IImportedData) => {
@@ -88,69 +82,12 @@ const backendSolver = async (importedData: any) => {
 
 
 export default function Test() {
-  async function handleOnChange(e: any) {
-    const res = await helpers.xlsxToJson(e.target.files[0]);
-    // const sheetNames = await helpers.getSheetNames(e.target.files[0]);
-    const dataVisualized = visualizeData(res);
-    const tableVisualized = visualizeData2(res);
-    setTables(tableVisualized);
-
-    // console.log(`stuck: ${JSON.stringify(dataVisualized.sheets)}`)
-    setOpenInfo(!!dataVisualized.importedData)
-    const backendSolverResponse = await backendSolver(dataVisualized.importedData);
-    const doneSolving = backendSolverResponse && backendSolverResponse.data && backendSolverResponse.data.status === "success"
-    setOpenAlert(doneSolving)
-    // setOpenError(!doneSolving)
-    setBackendresponse(backendSolverResponse);
-  }
-
-  const [backendResponse, setBackendresponse] = React.useState<any>([])
-  // const [backendSolvingStatus, setBackendSolvingStatus] = React.useState<any>(false)
-  // const [importResult, setImportResult] = React.useState(null)
-  // const [fetchResult, setFetchResult] = React.useState(null)
   const [openAlert, setOpenAlert] = React.useState(false)
   const [openInfo, setOpenInfo] = React.useState(false)
 
-  const [tables, setTables] = React.useState<{
-    columns: string[],
-    rows: object[],
-    sheetName: string
-  }[]>([]);
-
   return <div>
-    <BKTab tabLabels={["Test playground", "Stepper", "Solutions"]}>
-      <Timetable timetableProps={backendResponse}></Timetable>
-      {/* <div>
-        {
-          tables.map((table: any, index: number) => {
-            console.log(`$$$ ${table.sheetName} ${JSON.stringify(table.columns)} ${JSON.stringify(table.rows)}`)
-            return (
-              <BKTable
-                name={table.sheetName}
-                columns={table.columns}
-                data={table.rows}
-                setData={(tableData) => {
-                  console.log(`den day 2: ${JSON.stringify(tableData)}`)
-                  const clonedTable = JSON.parse(JSON.stringify(tables));
-                  clonedTable[index].rows = tableData;
-                  console.log(`den day: ${JSON.stringify(clonedTable[index])}`)
-                  setTables(clonedTable);
-                }}
-              />
-            );
-          })
-        }
-      </div> */}
-      {(<Stepper></Stepper>)}
-      <div>
-        {
-          (backendResponse && backendResponse.data && backendResponse.data.status === "success")
-            // ? (JSON.stringify(backendResponse))
-            ? (<VisualizeResultPanel {...backendResponse.data} />)
-            // ? <Timetable timetableProps={backendResponse.data.data.result[0]}></Timetable>
-            : ""
-        }
-      </div>
+    <BKTab tabLabels={["Stepper"]}>
+      {[(<Stepper></Stepper>)]}
     </BKTab>
     <BKAlert
       severity="info"
