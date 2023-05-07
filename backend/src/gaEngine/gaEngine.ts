@@ -385,16 +385,20 @@ const newClassEvaluate = ({
         }
         // Instructor & room availability
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
-        if (newRoomI) { // If unrestricted to move old class
+        if (newRoomI != null) { // If unrestricted to move old class
             for (let periodI = startPeriodI; periodI < maxI; ++periodI) {
                 // Check if instructor is available
                 let activeClassI = engineInput.instructors[instructorI].activeClasses[weekday]?.[periodI];
                 if (
-                    (activeClassI != null && !modifiedClasses.some((modClass) => {
-                        return modClass.id === engineInput.timetable[activeClassI].id;
-                    })) ||
-                    extendedInput.instructors[instructorI]?.[weekday]?.[periodI] != null ||
-                    extendedInput.instructors[instructorI]?.[weekday]?.[periodI] !== -1
+                    (
+                        activeClassI != null
+                        && !modifiedClasses.some((modClass) => {
+                            return modClass.id === engineInput.timetable[activeClassI].id;
+                        })
+                    ) || (
+                        extendedInput.instructors[instructorI]?.[weekday]?.[periodI] != null
+                        && extendedInput.instructors[instructorI]?.[weekday]?.[periodI] !== -1
+                    )
                 ) {
                     isNotFit = true;
                     break;
@@ -403,18 +407,21 @@ const newClassEvaluate = ({
                 activeClassI = engineInput.rooms[roomI].activeClasses[weekday]?.[periodI];
                 if (oldClassI != null) {
                     if (
-                        (activeClassI != null && !modifiedClasses.some((modClass) => {
-                            return modClass.id === engineInput.timetable[activeClassI].id;
-                        })) ||
-                        extendedInput.rooms[roomI]?.[weekday]?.[periodI] != null ||
-                        extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== -1
+                        (
+                            activeClassI != null
+                            && !modifiedClasses.some((modClass) => {
+                                return modClass.id === engineInput.timetable[activeClassI].id;
+                            })
+                        ) || (
+                            extendedInput.rooms[roomI]?.[weekday]?.[periodI] != null
+                            && extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== -1
+                        )
                     ) {
                         isNotFit = true;
                         break;
                     }
                 } else {
-                    oldClassI = activeClassI ||
-                        extendedInput.rooms[roomI]?.[weekday]?.[periodI];
+                    oldClassI = activeClassI || extendedInput.rooms[roomI]?.[weekday]?.[periodI];
                 }
             }
             // Check if there is old class and is movable
@@ -424,11 +431,15 @@ const newClassEvaluate = ({
                     // Check if new room is vacant
                     const activeClassI = engineInput.rooms[newRoomI].activeClasses[weekday]?.[periodI];
                     if (
-                        (activeClassI != null && !modifiedClasses.some((modClass) => {
-                            return modClass.id === engineInput.timetable[activeClassI].id;
-                        })) ||
-                        extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null ||
-                        extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                        (
+                            activeClassI != null
+                            && !modifiedClasses.some((modClass) => {
+                                return modClass.id === engineInput.timetable[activeClassI].id;
+                            })
+                        ) || (
+                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null
+                            && extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                        )
                     ) {
                         isNotFit = true;
                         break;
@@ -440,11 +451,15 @@ const newClassEvaluate = ({
                 // Check if room is vacant
                 let activeClassI = engineInput.rooms[roomI].activeClasses[weekday]?.[periodI];
                 if (
-                    (activeClassI != null && !modifiedClasses.some((modClass) => {
-                        return modClass.id === engineInput.timetable[activeClassI].id;
-                    })) ||
-                    extendedInput.rooms[roomI]?.[weekday]?.[periodI] != null ||
-                    extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== -1
+                    (
+                        activeClassI != null
+                        && !modifiedClasses.some((modClass) => {
+                            return modClass.id === engineInput.timetable[activeClassI].id;
+                        })
+                    ) || (
+                        extendedInput.rooms[roomI]?.[weekday]?.[periodI] != null
+                        && extendedInput.rooms[roomI]?.[weekday]?.[periodI] !== -1
+                    )
                 ) {
                     isNotFit = true;
                     break;
@@ -452,11 +467,15 @@ const newClassEvaluate = ({
                 // Check if instructor is available
                 activeClassI = engineInput.instructors[instructorI].activeClasses[weekday]?.[periodI];
                 if (
-                    (activeClassI != null && !modifiedClasses.some((modClass) => {
-                        return modClass.id === engineInput.timetable[activeClassI].id;
-                    })) ||
-                    extendedInput.instructors[instructorI]?.[weekday]?.[periodI] != null ||
-                    extendedInput.instructors[instructorI]?.[weekday]?.[periodI] !== -1
+                    (
+                        activeClassI != null 
+                        && !modifiedClasses.some((modClass) => {
+                            return modClass.id === engineInput.timetable[activeClassI].id;
+                        })
+                    ) || (
+                        extendedInput.instructors[instructorI]?.[weekday]?.[periodI] != null
+                        && extendedInput.instructors[instructorI]?.[weekday]?.[periodI] !== -1
+                    )
                 ) {
                     isNotFit = true;
                     break;
@@ -465,6 +484,7 @@ const newClassEvaluate = ({
         }
         if (isNotFit) {
             score *= 0;
+            break;
         }
         // -- Room's condition satisfied
         // Type match
@@ -605,18 +625,21 @@ const scaleupClassEvaluate = ({
                     const activeClassI = engineInput.rooms[newRoomI].activeClasses[weekday]?.[periodI];
                     if (oldClassI_2 != null) {
                         if (
-                            (activeClassI != null && !modifiedClasses.some((modClass) => {
-                                return modClass.id === engineInput.timetable[activeClassI].id;
-                            })) ||
-                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null ||
-                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                            (
+                                activeClassI != null
+                                && !modifiedClasses.some((modClass) => {
+                                    return modClass.id === engineInput.timetable[activeClassI].id;
+                                })
+                            ) || (
+                                extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null
+                                && extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                            )
                         ) {
                             score *= 0;
                             break;
                         }
                     } else {
-                        oldClassI_2 = activeClassI ||
-                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI];
+                        oldClassI_2 = activeClassI || extendedInput.rooms[newRoomI]?.[weekday]?.[periodI];
                     }
                 }
                 // Check if there is second movable class
@@ -626,11 +649,15 @@ const scaleupClassEvaluate = ({
                         // Check if new room is vacant
                         const activeClassI = engineInput.rooms[newRoomI].activeClasses[weekday]?.[periodI];
                         if (
-                            (activeClassI != null && !modifiedClasses.some((modClass) => {
-                                return modClass.id === engineInput.timetable[activeClassI].id;
-                            })) ||
-                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null ||
-                            extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                            (
+                                activeClassI != null
+                                && !modifiedClasses.some((modClass) => {
+                                    return modClass.id === engineInput.timetable[activeClassI].id;
+                                })
+                            ) || (
+                                extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] != null
+                                && extendedInput.rooms[newRoomI]?.[weekday]?.[periodI] !== -1
+                            )
                         ) {
                             oldIsFit_2 = false;
                             break;
@@ -818,7 +845,7 @@ export const engine = (input: any) => {
     let engineClassConfig: any = {
         chromosomeLength: engineInput.newClasses.length * 3,    // [roomI, classInfo, unrestrictedClasses]
         geneCount: engineInput.rooms.length,
-        generation: 10000,
+        generation: 5000,
         mutationRate: 0.01,
         maxPopulationSize: 50,
         fitness: fitness,
@@ -841,7 +868,7 @@ export const engine = (input: any) => {
         let secondChild: any;
     
         const length = engineInput.newClasses.length;
-        let crossPoint = randInt(1, length) * 2 // At least 1 gene should be able to crossover
+        let crossPoint = randInt(1, length) * 3 // At least 1 gene should be able to crossover
     
         firstChild = first.chromosome.slice(0, crossPoint);
         secondChild = second.chromosome.slice(0, crossPoint);
@@ -876,9 +903,9 @@ export const engine = (input: any) => {
     // Find class 
     for (let i = 0; i < topResultCount; ++i) {
         const dump = (_: any, loop: any) => {
-            // if (loop % 1000 == 0) {
+            if (loop % 1000 == 0) {
                 console.log(`${(topResultCount-i-1)*engineClassConfig.generation + loop} iteration left`);
-            // }
+            }
         }
         bestRes.push(engine.run(dump)[0]);
     }
@@ -890,9 +917,7 @@ export const engine = (input: any) => {
     console.log("-- Done!");
 
 
-    // console.log(engineInput.newClasses.map((res) => {
-    //     return JSON.stringify(res.subjectI);
-    // }));
+    // console.log(JSON.stringify(engineOutput.classResult));
 
     /*
     Room1 (4): 2[5-6, 10-12], 3[7-12], 4[2-4, 9-12] 
