@@ -14,7 +14,9 @@ const Sheets = ({ tables }: ISheetProps) => {
   };
 
   const regex = searchTerm ? new RegExp(`.*${searchTerm}.*`) : null
-  const filterRow = (rows: string[][]) => rows.filter(row => row.some(cell => regex.test(cell)))
+  const filterRow = (rows: string[][]) => rows.filter(row => Object.values(row).some(cell => regex.test(cell)))
+
+  // console.log(`debugging table.rows: ${tables[0].rows}`)
 
   return (
     <>
