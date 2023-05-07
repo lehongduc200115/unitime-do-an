@@ -1,12 +1,13 @@
 
 import { IImportedData } from '../interface';
 import helpers from 'src/helpers/helpers';
-import { BKAlert, BKStepper, BKTable } from "@components";
+import { BKAlert, BKSearch, BKStepper, BKTab, BKTable } from "@components";
 import Uploader from "../Uploader";
 import axios from 'axios';
 import { useState } from 'react';
 import constants from '../../../helpers/constants';
 import { VisualizeResultPanel } from '../VisualizeResultPanel/VisualizeResultPanel';
+import Sheets from '../Sheets';
 
 const steps = ['Import sheets', 'Review and make changes', 'Solve', 'Tune Result'];
 
@@ -51,24 +52,7 @@ const Stepper = () => {
             let component = <Uploader onUpload={onUpload}></Uploader>
 
             if (idx === 1) {
-              component = <>
-                {tables.map((table: any, index: number) => {
-                  console.log(`$$$ ${table.sheetName} ${JSON.stringify(table.columns)} ${JSON.stringify(table.rows)}`)
-                  return (
-                    <BKTable
-                      name={table.sheetName}
-                      columns={table.columns}
-                      data={table.rows}
-                      setData={(tableData) => {
-                        console.log(`den day 2: ${JSON.stringify(tableData)}`)
-                        const clonedTable = JSON.parse(JSON.stringify(tables));
-                        clonedTable[index].rows = tableData;
-                        console.log(`den day: ${JSON.stringify(clonedTable[index])}`)
-                        setTables(clonedTable);
-                      }}
-                    />
-                  );
-                })}</>
+              component = <Sheets tables={tables} />
             } else if (idx === 2) {
               return (<div>
                 {

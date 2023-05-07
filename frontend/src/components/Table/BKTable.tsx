@@ -12,7 +12,7 @@ import { Edit, Check, Close, Undo } from "@mui/icons-material";
 
 interface EditableTableProps {
   columns: string[];
-  name: string;
+  name?: string;
   data: any[];
   setData: (newData: any) => void;
 }
@@ -72,11 +72,11 @@ export function BKTable(props: EditableTableProps) {
   return (
     <Table>
       <TableHead>
-        <TableRow>
+        {props.name ?? <TableRow>
           <TableCell colSpan={props.columns.length + 1}>
             <h3>{props.name}</h3>
           </TableCell>
-        </TableRow>
+        </TableRow>}
         <TableRow>
           {props.columns.map((column) => (
             <TableCell key={column}>{column}</TableCell>

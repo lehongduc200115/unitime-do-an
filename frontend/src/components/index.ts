@@ -5,5 +5,15 @@ import { FlexCol } from "./FlexCol/FlexCol";
 import { BKTab } from "./Tab/BKTab";
 import { BKDrawer } from "./Drawer/BKDrawer";
 import { BKStepper } from "./Stepper/BKStepper";
+import { BKSearch } from "./Search/BKSearch";
 
-export { Navigation, BKAlert, BKTable, FlexCol, BKTab, BKDrawer, BKStepper };
+export {
+  Navigation,
+  BKAlert,
+  BKTable,
+  FlexCol,
+  BKTab,
+  BKDrawer,
+  BKStepper,
+  BKSearch,
+};
