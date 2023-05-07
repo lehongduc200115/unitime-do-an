@@ -1,10 +1,4 @@
 // General type
-export interface ICoord {
-    building: ["B1", "B2"],
-    value: number,
-    distanceTo: (point: ICoord) => number,
-}
-
 export const EWeekday: { [weekday: string]: number } = {
     '2': 0,
     '3': 1,
@@ -53,9 +47,12 @@ export interface IEngineInputNewClass {
     period: number,
     entrants: number,
     instructors: number[],      // Use engine's index (instructorI)
-    scaleupClass: boolean,
     preferedWeekday: number[],
     preferedPeriod: number[][], // Array of prefered startPeriodI, e.g. [[0,6],[7,11]]... (value is refined from origin, which still includes endPeriodId)
+    preferedCampus: number,
+    preferedRoom: number[],
+    scaleupClass: boolean,
+    unrestricted: boolean,
 }
 
 export interface IEngineInputPeriod {
@@ -68,9 +65,9 @@ export interface IEngineInputPeriod {
 export interface IEngineInputRoom {
     id: string,
     label: string,
+    campus: string,
     type: string,
     capacity: number,
-    coord: ICoord,
     activeClasses: number[][],  // 1st index is weekday, 2nd index is periodI, value is classI
 }
 

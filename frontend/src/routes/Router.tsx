@@ -9,6 +9,7 @@ import {
   Home,
   Instructor,
   Login,
+  Main,
   Register,
   Room,
   Student,
