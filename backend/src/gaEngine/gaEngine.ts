@@ -1,7 +1,7 @@
 import _, { max } from "lodash";
 
 import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
-import { EWeekday, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject, IEngineOutputResult } from "./type";
+import { EWeekday, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject, IEngineOutputNewClassResult, IEngineOutputResult } from "./type";
 
 
 const distanceTo = (a: IEngineInputRoom, b: IEngineInputRoom) => {
@@ -784,12 +784,15 @@ const scaleupClassEvaluate = ({
 }
 
 class EngineOutput {
-    classResult: IEngineOutputResult[][];
+    classResult: IEngineOutputResult[];
 
-    constructor(engineInput: EngineInput, classResult: Entity[]) {
-        this.classResult = new Array(classResult.length);
-        classResult.forEach((entity: Entity, suggestionI: number) => {
-            this.classResult[suggestionI] = [];
+    constructor(engineInput: EngineInput, engineResult: Entity[]) {
+        this.classResult = new Array(engineResult.length);
+        engineResult.forEach((entity: Entity, suggestionI: number) => {
+            this.classResult[suggestionI] = {
+                newClass: [],
+                modifiedClass: [],
+            };
             let maxI = engineInput.newClasses.length;
             // Accumulate gene result
             let extendedInput = {
@@ -801,6 +804,8 @@ class EngineOutput {
             let penalty = 1;
 
             for (let newClassI = 0; newClassI < maxI; ++newClassI) {
+                let refClass: IEngineOutputNewClassResult;
+
                 if (engineInput.newClasses[newClassI].scaleupClass) {   // Scaleup
                     const geneI = newClassI * 3;
                     const newRoomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
@@ -821,7 +826,7 @@ class EngineOutput {
                     });
 
                     // Parsed class
-                    let refClass: IEngineOutputResult = {
+                    refClass = {
                         id: `${engineInput.newClasses[newClassI].id} - scaleup from #N/A`,
                         subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
                         instructor: `N/A`,
@@ -867,9 +872,6 @@ class EngineOutput {
                             return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
                         });
                     }
-                    this.classResult[suggestionI].push(refClass);
-                    
-
                 } else {    // or new
                     const geneI = newClassI * 3;
                     const roomI = entity.chromosome[geneI] % (engineInput.newClasses[newClassI].preferedRoom.length || engineInput.rooms.length);    // RoomI
@@ -893,7 +895,7 @@ class EngineOutput {
                     });
 
                     // Parsed class
-                    let refClass: IEngineOutputResult = {
+                    refClass = {
                         id: engineInput.newClasses[newClassI].id,
                         subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
                         instructor: `${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].id} - ${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].name}`,
@@ -931,9 +933,10 @@ class EngineOutput {
                             return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
                         });
                     }
-                    this.classResult[suggestionI].push(refClass);
                 }
+                this.classResult[suggestionI].newClass.push(refClass);
             }
+            this.classResult[suggestionI].modifiedClass = modifiedClasses;
         });
     }
 }

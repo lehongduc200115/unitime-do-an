@@ -90,6 +90,11 @@ export interface IEngineInputSubject {
 }
 
 export interface IEngineOutputResult {
+    newClass: IEngineOutputNewClassResult[],
+    modifiedClass: IEngineOutputModifiedClassResult[],
+}
+
+export interface IEngineOutputNewClassResult {
     id: string,
     subject: string,
     instructor: string,
@@ -101,3 +106,9 @@ export interface IEngineOutputResult {
     time: string,
     capableStudents: any[],
 }
+
+interface IOmitModifiedClassResult {
+    students: number[]      // Use engine's index
+}
+
+export type IEngineOutputModifiedClassResult = Omit<IEngineInputClass, keyof IOmitModifiedClassResult>;
