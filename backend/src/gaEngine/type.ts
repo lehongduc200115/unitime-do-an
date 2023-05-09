@@ -50,7 +50,7 @@ export interface IEngineInputNewClass {
     instructors: number[],      // Use engine's index (instructorI)
     preferedWeekday: number[],
     preferedPeriod: number[][], // Array of prefered startPeriodI, e.g. [[0,6],[7,11]]... (value is refined from origin, which still includes endPeriodId)
-    preferedCampus: number,
+    preferedCampus: string,
     preferedRoom: number[],
     scaleupClass: boolean,
     unrestricted: boolean,

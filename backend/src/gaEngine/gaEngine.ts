@@ -240,7 +240,7 @@ class EngineInput implements IEngineInput {
                 subjectI: subjectI,
                 type: rowItem.type,
                 period: parseInt(rowItem.period),
-                minEntrants: parseInt(rowItem.minEntrants),
+                minEntrants: parseInt(rowItem.entrants),
                 maxEntrants: parseInt(rowItem.maxEntrants),
                 instructors: this.subjects
                     .find((subject) => {
@@ -252,7 +252,7 @@ class EngineInput implements IEngineInput {
                     .split(",")
                     .map((weekday: string) => {
                         return EWeekday[weekday];
-                    }),
+                    }) ?? [0, 1, 2, 3, 4, 5, 6],
                 preferedPeriod: rowItem.preferedPeriod
                     ?.toString()
                     .split(",")
@@ -265,7 +265,7 @@ class EngineInput implements IEngineInput {
                                         return period.id === periodId;
                                     }) - index*(parseInt(rowItem.period) - 1);
                             });
-                    }),
+                    }) ?? [[0, this.periods.length - 1]],
                 preferedCampus: rowItem.preferedCampus,
                 preferedRoom: rowItem.preferedRoom
                     ?.toString()
@@ -275,8 +275,8 @@ class EngineInput implements IEngineInput {
                             .findIndex((room: IEngineInputRoom) => {
                                 return room.id === roomId
                             })
-                    }),
-                scaleupClass: rowItem.scaleupClass ? true : false,
+                    }) ?? [],
+                scaleupClass: rowItem.scaleUpClass ? true : false,
                 unrestricted: rowItem.unrestricted ? true : false,
             } as IEngineInputNewClass;
         })
@@ -367,7 +367,7 @@ const newClassEvaluate = ({
         //-- Time availability
         // Check if prefered weekday
         if (!engineInput.newClasses[newClassI].preferedWeekday.includes(weekday)) {
-            score *= 0;
+            score = 0;
             break;
         }
         // Check if fit a prefered period frame
@@ -383,7 +383,7 @@ const newClassEvaluate = ({
             }
         }
         if (isNotFit) {
-            score *= 0;
+            score = 0;
             break;
         }
         // Instructor & room availability
@@ -487,36 +487,43 @@ const newClassEvaluate = ({
             }
         }
         if (isNotFit) {
-            score *= 0;
+            score = 0;
             break;
         }
         // -- Room's condition satisfied
         // Type match
         if (engineInput.rooms[roomI].type != engineInput.newClasses[newClassI].type) {
-            score *= 0;
+            score = 0;
             break;
         }
         // Capacity availability
         if (engineInput.rooms[roomI].capacity < engineInput.newClasses[newClassI].minEntrants) {
-            score *= 0;
+            score = 0;
             break;
         }
         // -- Instructor availability
         // Assume that instructor only teach in 1 campus at a day
-        maxI = engineInput.periods.length;
-        for (let i = 0; i < maxI; ++i) {
-            const proxClassI = engineInput.newClasses[newClassI].preferedCampus || 
-                engineInput.instructors[instructorI].activeClasses[weekday]?.[i]
-            if (proxClassI != null) {
-                if (distanceTo(engineInput.rooms[roomI], engineInput.rooms[engineInput.timetable[proxClassI].roomI]) > 0) {
-                    isNotFit = true;
-                    break;
+        // Check if room is in preferred campus
+        if (engineInput.newClasses[newClassI].preferedCampus != null) {
+            if (engineInput.rooms[roomI].campus !== engineInput.newClasses[newClassI].preferedCampus) {
+                score = 0;
+                break;
+            }
+        } else {
+            maxI = engineInput.periods.length;
+            for (let i = 0; i < maxI; ++i) {
+                const proxClassI = engineInput.instructors[instructorI].activeClasses[weekday]?.[i]
+                if (proxClassI != null) {
+                    if (distanceTo(engineInput.rooms[roomI], engineInput.rooms[engineInput.timetable[proxClassI].roomI]) > 0) {
+                        isNotFit = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (isNotFit) {
-            score *= 0;
-            break;
+            if (isNotFit) {
+                score = 0;
+                break;
+            }
         }
 
         // -- Student availability
@@ -625,12 +632,12 @@ const scaleupClassEvaluate = ({
                 // -- Specified new room satisfied?
                 // Type check
                 if (engineInput.rooms[newRoomI].type !== engineInput.newClasses[newClassI].type) {
-                    score *= 0;
+                    score = 0;
                     break;
                 }
                 // Capacity check
                 if (engineInput.rooms[newRoomI].capacity < newClassEntrants) {
-                    score *= 0;
+                    score = 0;
                     break;
                 }
                 // -- Check if old class is able to be moved to new room (only occupy 1 other class)
@@ -661,7 +668,7 @@ const scaleupClassEvaluate = ({
                     }
                 }
                 if (isNotFit) {
-                    score *= 0;
+                    score = 0;
                     break;
                 }
                 // Check if there is second movable class
@@ -691,7 +698,7 @@ const scaleupClassEvaluate = ({
             }
 
             if (isNotFit) {
-                score *= 0;
+                score = 0;
                 break;
             }
 
@@ -794,7 +801,7 @@ class EngineOutput {
             let penalty = 1;
 
             for (let newClassI = 0; newClassI < maxI; ++newClassI) {
-                if (engineInput.newClasses[newClassI].scaleupClass) {
+                if (engineInput.newClasses[newClassI].scaleupClass) {   // Scaleup
                     const geneI = newClassI * 3;
                     const newRoomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
                     const oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;    // oldClassI
@@ -863,9 +870,9 @@ class EngineOutput {
                     this.classResult[suggestionI].push(refClass);
                     
 
-                } else {
+                } else {    // or new
                     const geneI = newClassI * 3;
-                    const roomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
+                    const roomI = entity.chromosome[geneI] % (engineInput.newClasses[newClassI].preferedRoom.length || engineInput.rooms.length);    // RoomI
                     const classInfo = entity.chromosome[geneI + 1];                       // instructorI & weekday & startperiodI
                     const instructorI = Math.floor(classInfo / (7 * engineInput.periods.length)) % engineInput.newClasses[newClassI].instructors.length;
                     const weekday = classInfo % (7 * engineInput.periods.length) % engineInput.newClasses[newClassI].preferedWeekday.length;
