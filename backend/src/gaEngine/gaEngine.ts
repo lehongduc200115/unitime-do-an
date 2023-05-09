@@ -240,7 +240,8 @@ class EngineInput implements IEngineInput {
                 subjectI: subjectI,
                 type: rowItem.type,
                 period: parseInt(rowItem.period),
-                entrants: parseInt(rowItem.entrants),
+                minEntrants: parseInt(rowItem.minEntrants),
+                maxEntrants: parseInt(rowItem.maxEntrants),
                 instructors: this.subjects
                     .find((subject) => {
                         return subject.id === rowItem.subjectId.toString();
@@ -333,6 +334,7 @@ const checkCapableStudent = ({
 
 const newClassEvaluate = ({
         score,
+        penalty,
         newClassI,
         weekday,
         startPeriodI,
@@ -343,6 +345,7 @@ const newClassEvaluate = ({
         modifiedClasses,
     }:{
         score: number,
+        penalty: number,
         weekday: number,
         startPeriodI: number,
         newClassI: number,
@@ -494,7 +497,7 @@ const newClassEvaluate = ({
             break;
         }
         // Capacity availability
-        if (engineInput.rooms[roomI].capacity < engineInput.newClasses[newClassI].entrants) {
+        if (engineInput.rooms[roomI].capacity < engineInput.newClasses[newClassI].minEntrants) {
             score *= 0;
             break;
         }
@@ -560,7 +563,8 @@ const newClassEvaluate = ({
                 extendedInput.instructors[instructorI][weekday][periodI] = oldClassI;
             }
             // Nudge score
-            score = Math.floor(score / 2);
+            score = score - penalty;
+            penalty += 1;
         }
         // Register new class
         maxI = startPeriodI + engineInput.newClasses[newClassI].period;
@@ -581,6 +585,7 @@ const newClassEvaluate = ({
 
 const scaleupClassEvaluate = ({
         score,
+        penalty,
         newClassI,
         oldClassI,
         newRoomI,
@@ -591,8 +596,9 @@ const scaleupClassEvaluate = ({
         modifiedClasses,
     }:{
         score: number,
+        penalty: number,
         newClassI: number,
-        oldClassI: number,
+        oldClassI: number, // Picked classI
         newRoomI: number,
         newRoomI_2: number,
         newWeekday?: number,
@@ -608,7 +614,7 @@ const scaleupClassEvaluate = ({
             let oldIsFit = false;       // Picked class is suitable of scaleup (true) or need to be moved (false)
             let oldClassI_2: number | undefined = undefined; // second class to be moved
             // -- Check room capacity
-            const newClassEntrants = engineInput.newClasses[newClassI].entrants + engineInput.timetable[oldClassI].students.length;
+            const newClassEntrants = engineInput.newClasses[newClassI].minEntrants + engineInput.timetable[oldClassI].students.length;
             // Current room satisfied?
             let oldRoomI = modifiedClasses.find((modClass) => {
                     return modClass.id === engineInput.timetable[oldClassI].id;
@@ -627,7 +633,7 @@ const scaleupClassEvaluate = ({
                     score *= 0;
                     break;
                 }
-                // Check if old class is able to be moved to new room
+                // -- Check if old class is able to be moved to new room (only occupy 1 other class)
                 const weekday = engineInput.timetable[oldClassI].weekday;
                 const startPeriod = engineInput.timetable[oldClassI].startPeriod;
                 const endPeriod = engineInput.timetable[oldClassI].endPeriod;
@@ -689,9 +695,31 @@ const scaleupClassEvaluate = ({
                 break;
             }
 
+            // -- Student availability
+            const capableStudents = checkCapableStudent({
+                weekday: engineInput.timetable[oldClassI].weekday,
+                startPeriodI: engineInput.timetable[oldClassI].startPeriod,
+                periodCount: engineInput.timetable[oldClassI].endPeriod - engineInput.timetable[oldClassI].startPeriod + 1,
+                subjectI: engineInput.newClasses[newClassI].subjectI,
+                roomI: oldIsFit ? engineInput.timetable[oldClassI].roomI : newRoomI,
+            });
+            // TODO: check if student count meets minimum requirement
+            score += capableStudents.length;
+
             // -- Satisfied all constraints
             // Check if another class is moved while shifting picked class
             if (oldClassI_2 != null) {
+                // Append class to modified category and update class's room
+                const modClassI = modifiedClasses.findIndex((modClass) => {
+                    return modClass.id === engineInput.timetable[oldClassI_2!].id;
+                })
+                if (modClassI < 0) {
+                    let modClass = _.cloneDeep(engineInput.timetable[oldClassI_2]);
+                    modClass.roomI = newRoomI_2;
+                    modifiedClasses.push(modClass);
+                } else {
+                    modifiedClasses[modClassI].roomI = newRoomI_2;
+                }
                 // Shift second class (from newRoomI -> to newRoomI_2)
                 let weekday = engineInput.timetable[oldClassI_2].weekday;
                 let startPeriod = engineInput.timetable[oldClassI_2].startPeriod
@@ -707,12 +735,25 @@ const scaleupClassEvaluate = ({
                     extendedInput.rooms[newRoomI][weekday][periodI] = -1;
                 }
                 // Nudge score
-                score = Math.floor(score / 2);
+                score = score - penalty;
+                penalty += 1;
             }
             // Check if picked classroom has enough space
             if (oldIsFit) {
                 // Do nothing
             } else {
+                // Append class to modified category and update class's room
+                const modClassI = modifiedClasses.findIndex((modClass) => {
+                    return modClass.id === engineInput.timetable[oldClassI].id;
+                });
+                if (modClassI < 0) {
+                    let modClass = _.cloneDeep(engineInput.timetable[oldClassI]);
+                    modClass.roomI = newRoomI;
+                    modifiedClasses.push(modClass);
+                } else {
+                    modifiedClasses[modClassI].roomI = newRoomI;
+                }
+                // Update room
                 const weekday = engineInput.timetable[oldClassI].weekday;
                 const startPeriod = engineInput.timetable[oldClassI].startPeriod;
                 const endPeriod = engineInput.timetable[oldClassI].endPeriod;
@@ -720,15 +761,16 @@ const scaleupClassEvaluate = ({
                     // Add shifted room to extended input
                     extendedInput.rooms[newRoomI] = extendedInput.rooms[newRoomI] || new Array(7);
                     extendedInput.rooms[newRoomI][weekday] = extendedInput.rooms[newRoomI][weekday] || new Array(engineInput.periods.length);
-                    extendedInput.rooms[newRoomI][weekday][periodI] = engineInput.timetable.length + newClassI;
+                    extendedInput.rooms[newRoomI][weekday][periodI] = oldClassI;
                     // Remove old room from extended input
                     extendedInput.rooms[oldRoomI] = extendedInput.rooms[oldRoomI] || new Array(7);
                     extendedInput.rooms[oldRoomI][weekday] = extendedInput.rooms[oldRoomI][weekday] || new Array(engineInput.periods.length);
                     extendedInput.rooms[oldRoomI][weekday][periodI] = -1;
                 }
                 // Nudge score
-                score -= 1;
+                score = Math.max(score - 1, 1); // Try the best not to move room
             }
+            // Increase 
         } while (false);
 
         return score;
@@ -749,10 +791,77 @@ class EngineOutput {
                 students: new Array(engineInput.students.length),
             }
             let modifiedClasses: IEngineInputClass[] = [];
-            let score = 0;
+            let penalty = 1;
 
             for (let newClassI = 0; newClassI < maxI; ++newClassI) {
                 if (engineInput.newClasses[newClassI].scaleupClass) {
+                    const geneI = newClassI * 3;
+                    const newRoomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
+                    const oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;    // oldClassI
+                    const extraGene = entity.chromosome[geneI + 2];
+                    
+                    let geneEval = scaleupClassEvaluate({
+                        score: engineInput.newClasses.length,
+                        penalty: penalty,
+                        newClassI: newClassI,
+                        oldClassI: oldClassI,
+                        newRoomI: newRoomI,
+                        newRoomI_2: extraGene % engineInput.rooms.length,
+                        newWeekday: extraGene % engineInput.newClasses[newClassI].preferedWeekday.length,
+                        newStartPeriodI: Math.floor(extraGene / 7),
+                        extendedInput: extendedInput,
+                        modifiedClasses: modifiedClasses,
+                    });
+
+                    // Parsed class
+                    let refClass: IEngineOutputResult = {
+                        id: `${engineInput.newClasses[newClassI].id} - scaleup from #N/A`,
+                        subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
+                        instructor: `N/A`,
+                        type: engineInput.newClasses[newClassI].type,
+                        entrants: 0,
+                        room: "N/A",
+                        weekday: "N/A",
+                        period: "N/A",
+                        time: "N/A",
+                        capableStudents: [],
+                    }
+                    // Acceptable class
+                    if (geneEval > 0) {
+                        // -- Update info of new class
+                        // Id & instructor's info
+                        refClass.id = `${engineInput.newClasses[newClassI].id} - scaleup from #${engineInput.timetable[oldClassI].id}`,
+                        refClass.instructor = `${engineInput.instructors[engineInput.timetable[oldClassI].instructorI].id} - ${engineInput.instructors[engineInput.timetable[oldClassI].instructorI].name}`
+
+                        // Room
+                        const roomI = modifiedClasses.find((modClass) => {
+                            return modClass.id === engineInput.timetable[oldClassI].id;
+                        })?.roomI ?? engineInput.timetable[oldClassI].roomI;
+                        refClass.room = engineInput.rooms[roomI].id;
+
+                        // Schedule
+                        const weekday = engineInput.timetable[oldClassI].weekday
+                        const resWeekday = Object.keys(EWeekday).find((key) => EWeekday[key] === weekday)!;
+                        refClass.weekday = resWeekday;
+                        const startPeriod: IEngineInputPeriod = engineInput.periods[engineInput.timetable[oldClassI].startPeriod];
+                        const endPeriod: IEngineInputPeriod = engineInput.periods[engineInput.timetable[oldClassI].endPeriod];
+                        refClass.period = `${startPeriod.id}-${endPeriod.id}`;
+                        refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`;
+
+                        // Student
+                        refClass.capableStudents = checkCapableStudent({
+                            weekday: weekday,
+                            startPeriodI: engineInput.timetable[oldClassI].startPeriod,
+                            periodCount: engineInput.timetable[oldClassI].endPeriod - engineInput.timetable[oldClassI].startPeriod + 1,
+                            subjectI: engineInput.timetable[oldClassI].subjectI,
+                            roomI: roomI,
+                        });
+                        refClass.capableStudents = refClass.capableStudents.map((studentI: number) => {
+                            return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
+                        });
+                    }
+                    this.classResult[suggestionI].push(refClass);
+                    
 
                 } else {
                     const geneI = newClassI * 3;
@@ -764,7 +873,8 @@ class EngineOutput {
                     const newRoomI = entity.chromosome[geneI + 2];
 
                     let geneEval = newClassEvaluate({
-                        score: 10,
+                        score: engineInput.newClasses.length,
+                        penalty: penalty,
                         newClassI: newClassI,
                         weekday: weekday,
                         startPeriodI: startPeriodI,
@@ -774,7 +884,6 @@ class EngineOutput {
                         extendedInput: extendedInput,
                         modifiedClasses: modifiedClasses,
                     });
-                    score += geneEval;
 
                     // Parsed class
                     let refClass: IEngineOutputResult = {
@@ -791,13 +900,19 @@ class EngineOutput {
                     }
                     // Acceptable class
                     if (geneEval > 0) {
+                        // -- Update info of new class
+                        // Room
                         refClass.room = engineInput.rooms[roomI].id;
+
+                        // Schedule
                         const resWeekday: string = Object.keys(EWeekday).find((key) => EWeekday[key] === weekday)!;
                         refClass.weekday = resWeekday;
                         const startPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI];
                         const endPeriod: IEngineInputPeriod = engineInput.periods[startPeriodI + engineInput.newClasses[newClassI].period - 1];
                         refClass.period = `${startPeriod.id}-${endPeriod.id}`;
                         refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`;
+
+                        // Student
                         refClass.capableStudents = checkCapableStudent({
                             weekday: weekday,
                             startPeriodI: startPeriodI,
@@ -825,6 +940,7 @@ const fitness = (entity: Entity) => {
     }
     let modifiedClasses: IEngineInputClass[] = [];
     let score = 1;
+    let penalty = 1;
 
     const maxI = engineInput.newClasses.length;
     for (let newClassI = 0; newClassI < maxI; ++newClassI) {
@@ -836,6 +952,7 @@ const fitness = (entity: Entity) => {
             
             let geneEval = scaleupClassEvaluate({
                 score: engineInput.newClasses.length,
+                penalty: penalty,
                 newClassI: newClassI,
                 oldClassI: oldClassI,
                 newRoomI: newRoomI,
@@ -857,6 +974,7 @@ const fitness = (entity: Entity) => {
     
             let geneEval = newClassEvaluate({
                 score: engineInput.newClasses.length,
+                penalty: penalty,
                 newClassI: newClassI,
                 weekday: weekday,
                 startPeriodI: startPeriodI,

@@ -45,7 +45,8 @@ export interface IEngineInputNewClass {
     subjectI: number,
     type: string,
     period: number,
-    entrants: number,
+    minEntrants: number,
+    maxEntrants: number,
     instructors: number[],      // Use engine's index (instructorI)
     preferedWeekday: number[],
     preferedPeriod: number[][], // Array of prefered startPeriodI, e.g. [[0,6],[7,11]]... (value is refined from origin, which still includes endPeriodId)
