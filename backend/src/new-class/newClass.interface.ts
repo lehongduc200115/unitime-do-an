@@ -4,7 +4,8 @@ export interface INewClassPayload {
   id: string;
   subjectId: string;
   type?: string;
-  entrants: number;
+  maxEntrants: number;
+  minEntrants: number;
   preferedWeekday?: string;
   preferedPeriod?: string;
   period: number;
