@@ -597,8 +597,8 @@ const scaleupClassEvaluate = ({
         oldClassI,
         newRoomI,
         newRoomI_2,
-        newWeekday,
-        newStartPeriodI,
+        // newWeekday,
+        // newStartPeriodI,
         extendedInput,
         modifiedClasses,
     }:{
