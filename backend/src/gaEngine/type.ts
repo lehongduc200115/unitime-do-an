@@ -88,27 +88,26 @@ export interface IEngineInputSubject {
     newStudents: number[],  // Use engine's index
     newClasses: number[],   // Use engine's index
 }
-
-export interface IEngineOutputResult {
-    newClass: IEngineOutputNewClassResult[],
-    modifiedClass: IEngineOutputModifiedClassResult[],
+interface IEngineOutputClassOmit {
+    name: string,
+    subjectI: number,       // Use engine's index
+    instructorI: number,    // Use engine's index
+    roomI: number,          // Use engine's index
+    weekday: number         // 
+    startPeriod: number,    // Use engine's index
+    endPeriod: number,      // Use engine's index
+    students: number[]      // Use engine's index
 }
 
-export interface IEngineOutputNewClassResult {
+export interface IEngineOutputClass {
     id: string,
     subject: string,
     instructor: string,
-    type: string,
-    entrants: number,
     room: string,
     weekday: string,
     period: string,
     time: string,
-    capableStudents: any[],
+    entrants: number,
+    capableStudents: string[],
+    type: "not_available" | "origin" | "new" | "modified" | "new_modified";
 }
-
-interface IOmitModifiedClassResult {
-    students: number[]      // Use engine's index
-}
-
-export type IEngineOutputModifiedClassResult = Omit<IEngineInputClass, keyof IOmitModifiedClassResult>;

@@ -1,7 +1,7 @@
 import _, { max } from "lodash";
 
 import { Entity, GeneticAlgorithm, randInt } from "./GeneticAlgorithm";
-import { EWeekday, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject, IEngineOutputNewClassResult, IEngineOutputResult } from "./type";
+import { EWeekday, IEngineInput, IEngineInputClass, IEngineInputInstructor, IEngineInputNewClass, IEngineInputPeriod, IEngineInputRoom, IEngineInputStudent, IEngineInputSubject, IEngineOutputClass } from "./type";
 
 
 const distanceTo = (a: IEngineInputRoom, b: IEngineInputRoom) => {
@@ -597,8 +597,8 @@ const scaleupClassEvaluate = ({
         oldClassI,
         newRoomI,
         newRoomI_2,
-        // newWeekday,
-        // newStartPeriodI,
+        newWeekday,
+        newStartPeriodI,
         extendedInput,
         modifiedClasses,
     }:{
@@ -784,15 +784,14 @@ const scaleupClassEvaluate = ({
 }
 
 class EngineOutput {
-    classResult: IEngineOutputResult[];
+    classResult: IEngineOutputClass[][];
 
     constructor(engineInput: EngineInput, engineResult: Entity[]) {
         this.classResult = new Array(engineResult.length);
         engineResult.forEach((entity: Entity, suggestionI: number) => {
-            this.classResult[suggestionI] = {
-                newClass: [],
-                modifiedClass: [],
-            };
+            this.classResult[suggestionI] = [];
+
+            let newClasses = [];
             let maxI = engineInput.newClasses.length;
             // Accumulate gene result
             let extendedInput = {
@@ -803,8 +802,27 @@ class EngineOutput {
             let modifiedClasses: IEngineInputClass[] = [];
             let penalty = 1;
 
+            // Clone origin timetable
+            engineInput.timetable.forEach((originClass) => {
+                this.classResult[suggestionI].push({
+                    id: originClass.id,
+                    subject: `${engineInput.subjects[originClass.subjectI].id} - ${engineInput.subjects[originClass.subjectI].name}`,
+                    instructor: `${engineInput.subjects[originClass.subjectI].id} - ${engineInput.subjects[originClass.subjectI].name}`,
+                    room: engineInput.rooms[originClass.roomI].id,
+                    weekday: Object.keys(EWeekday).find((key) => EWeekday[key] === originClass.weekday)!,
+                    period: `${engineInput.periods[originClass.startPeriod].id} - ${engineInput.periods[originClass.endPeriod].id}`,
+                    time: `${engineInput.periods[originClass.startPeriod].startTime} - ${engineInput.periods[originClass.endPeriod].endTime}`,
+                    entrants: originClass.students.length,
+                    capableStudents: originClass.students.map((studentI: number) => {
+                        return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
+                    }),
+                    type: "origin",
+                });
+            })
+
+            // Gather info from new & modified class
             for (let newClassI = 0; newClassI < maxI; ++newClassI) {
-                let refClass: IEngineOutputNewClassResult;
+                let refClass: IEngineOutputClass;
 
                 if (engineInput.newClasses[newClassI].scaleupClass) {   // Scaleup
                     const geneI = newClassI * 3;
@@ -827,22 +845,23 @@ class EngineOutput {
 
                     // Parsed class
                     refClass = {
-                        id: `${engineInput.newClasses[newClassI].id} - scaleup from #N/A`,
+                        id: "",
                         subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
                         instructor: `N/A`,
-                        type: engineInput.newClasses[newClassI].type,
-                        entrants: 0,
                         room: "N/A",
                         weekday: "N/A",
                         period: "N/A",
                         time: "N/A",
+                        // type: engineInput.newClasses[newClassI].type,
+                        entrants: 0,
                         capableStudents: [],
+                        type: "not_available",
                     }
                     // Acceptable class
                     if (geneEval > 0) {
                         // -- Update info of new class
                         // Id & instructor's info
-                        refClass.id = `${engineInput.newClasses[newClassI].id} - scaleup from #${engineInput.timetable[oldClassI].id}`,
+                        refClass.id = engineInput.timetable[oldClassI].id,
                         refClass.instructor = `${engineInput.instructors[engineInput.timetable[oldClassI].instructorI].id} - ${engineInput.instructors[engineInput.timetable[oldClassI].instructorI].name}`
 
                         // Room
@@ -861,16 +880,17 @@ class EngineOutput {
                         refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`;
 
                         // Student
-                        refClass.capableStudents = checkCapableStudent({
+                        let studentList = checkCapableStudent({
                             weekday: weekday,
                             startPeriodI: engineInput.timetable[oldClassI].startPeriod,
                             periodCount: engineInput.timetable[oldClassI].endPeriod - engineInput.timetable[oldClassI].startPeriod + 1,
                             subjectI: engineInput.timetable[oldClassI].subjectI,
                             roomI: roomI,
                         });
-                        refClass.capableStudents = refClass.capableStudents.map((studentI: number) => {
+                        refClass.capableStudents = studentList.map((studentI: number) => {
                             return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
                         });
+                        refClass.type = "new_modified";
                     }
                 } else {    // or new
                     const geneI = newClassI * 3;
@@ -896,16 +916,17 @@ class EngineOutput {
 
                     // Parsed class
                     refClass = {
-                        id: engineInput.newClasses[newClassI].id,
+                        id: "",
                         subject: `${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].id} - ${engineInput.subjects[engineInput.newClasses[newClassI].subjectI].name}`,
                         instructor: `${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].id} - ${engineInput.instructors[engineInput.newClasses[newClassI].instructors[instructorI]].name}`,
-                        type: engineInput.newClasses[newClassI].type,
                         entrants: 0,
                         room: "N/A",
                         weekday: "N/A",
                         period: "N/A",
                         time: "N/A",
                         capableStudents: [],
+                        // type: engineInput.newClasses[newClassI].type,
+                        type: "not_available",
                     }
                     // Acceptable class
                     if (geneEval > 0) {
@@ -922,21 +943,55 @@ class EngineOutput {
                         refClass.time = `${startPeriod.startTime}-${endPeriod.endTime}`;
 
                         // Student
-                        refClass.capableStudents = checkCapableStudent({
+                        let studentList = checkCapableStudent({
                             weekday: weekday,
                             startPeriodI: startPeriodI,
                             periodCount: engineInput.newClasses[newClassI].period,
                             subjectI: engineInput.newClasses[newClassI].subjectI,
                             roomI: roomI,
                         });
-                        refClass.capableStudents = refClass.capableStudents.map((studentI: number) => {
+                        refClass.capableStudents = studentList.map((studentI: number) => {
                             return `${engineInput.students[studentI].id} - ${engineInput.students[studentI].name}`
                         });
+
+                        refClass.type = "new";
                     }
                 }
-                this.classResult[suggestionI].newClass.push(refClass);
+                newClasses.push(refClass);
             }
-            this.classResult[suggestionI].modifiedClass = modifiedClasses;
+
+            modifiedClasses.forEach((modClass) => {
+                let originClassI = engineInput.timetable.findIndex((originClass) => {
+                    return modClass.id === originClass.id;
+                });
+                this.classResult[suggestionI][originClassI].room = engineInput.rooms[modClass.roomI].id;
+                this.classResult[suggestionI][originClassI].weekday = Object.keys(EWeekday).find((key) => EWeekday[key] === modClass.weekday)!;
+                const startPeriod = engineInput.periods[modClass.startPeriod];
+                const endPeriod = engineInput.periods[modClass.endPeriod];
+                this.classResult[suggestionI][originClassI].period = `${startPeriod.id}-${endPeriod.id}`;
+                this.classResult[suggestionI][originClassI].time = `${startPeriod.startTime}-${endPeriod.endTime}`;
+                this.classResult[suggestionI][originClassI].type = "modified";
+            })
+
+            newClasses.forEach((newClass, newClassI) => {
+                if (newClass.type !== "not_available") {
+                    let modifiedClassI = this.classResult[suggestionI].findIndex((outputClass) => {
+                        return outputClass.id === newClass.id;
+                    });
+                    if (modifiedClassI < 0) {
+                        this.classResult[suggestionI].push({
+                            ...newClass,
+                            id: `${engineInput.timetable.length + newClassI}`,
+                            entrants: Math.min(engineInput.newClasses[newClassI].maxEntrants, engineInput.newClasses[newClassI].minEntrants + newClass.capableStudents.length),
+                        });
+                    } else {
+                        this.classResult[suggestionI][modifiedClassI].type = "new_modified";
+                        this.classResult[suggestionI][modifiedClassI].entrants = Math.min(this.classResult[suggestionI][modifiedClassI].entrants + newClass.capableStudents.length, engineInput.newClasses[newClassI].maxEntrants);
+                        this.classResult[suggestionI][modifiedClassI].capableStudents.push(...newClass.capableStudents);
+                    }
+                }
+            })
+
         });
     }
 }
