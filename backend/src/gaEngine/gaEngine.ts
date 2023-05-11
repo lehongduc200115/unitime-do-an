@@ -535,7 +535,14 @@ const newClassEvaluate = ({
             roomI: roomI,
         });
         // TODO: check if student count meets minimum requirement
-        score += capableStudents.length;
+        if (capableStudents.length < engineInput.newClasses[newClassI].minEntrants) {
+            score = 0;
+            break;
+        } else {
+            // The more capable students attend to class, the better the score is
+            let maxEntrants = engineInput.newClasses[newClassI].maxEntrants;
+            score = score - Math.floor(score / 2 / maxEntrants * (maxEntrants - Math.min(maxEntrants, capableStudents.length)));
+        }
         
         // -- Satisfied all hard constraints
         // Unrestricted mode: an old class is moved
@@ -711,7 +718,14 @@ const scaleupClassEvaluate = ({
                 roomI: oldIsFit ? engineInput.timetable[oldClassI].roomI : newRoomI,
             });
             // TODO: check if student count meets minimum requirement
-            score += capableStudents.length;
+            if (capableStudents.length < engineInput.newClasses[newClassI].minEntrants) {
+                score = 0;
+                break;
+            } else {
+                // The more capable students attend to class, the better the score is
+                let maxEntrants = engineInput.newClasses[newClassI].maxEntrants;
+                score = score - Math.floor(score / 2 / maxEntrants * (maxEntrants - Math.min(maxEntrants, capableStudents.length)));
+            }
 
             // -- Satisfied all constraints
             // Check if another class is moved while shifting picked class
@@ -989,6 +1003,7 @@ class EngineOutput {
                         this.classResult[suggestionI][modifiedClassI].type = "new_modified";
                         this.classResult[suggestionI][modifiedClassI].entrants = Math.min(this.classResult[suggestionI][modifiedClassI].entrants + newClass.capableStudents.length, engineInput.newClasses[newClassI].maxEntrants);
                         this.classResult[suggestionI][modifiedClassI].capableStudents.push(...newClass.capableStudents);
+                        console.log(JSON.stringify(newClass.capableStudents));
                     }
                 }
             })
@@ -1070,7 +1085,7 @@ export const engine = (input: any) => {
     let engineClassConfig: any = {
         chromosomeLength: engineInput.newClasses.length * 3,    // [roomI, classInfo, unrestrictedClasses]
         geneCount: engineInput.rooms.length,
-        generation: 5000,
+        generation: 2000,
         mutationRate: 0.01,
         maxPopulationSize: 50,
         fitness: fitness,
@@ -1121,7 +1136,7 @@ export const engine = (input: any) => {
     }
     console.log("-- Done!");
     // -- Run engine
-    const topResultCount = 5;
+    const topResultCount = 1;
     let bestRes: Entity[] = [];     // Store best results from each run
     let engine = new GeneticAlgorithm();
     engine.configurate(engineClassConfig);
