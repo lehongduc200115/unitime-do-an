@@ -827,7 +827,8 @@ class EngineOutput {
                 if (engineInput.newClasses[newClassI].scaleupClass) {   // Scaleup
                     const geneI = newClassI * 3;
                     const newRoomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
-                    const oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;    // oldClassI
+                    let oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;
+                    oldClassI = engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes[oldClassI];
                     const extraGene = entity.chromosome[geneI + 2];
                     
                     let geneEval = scaleupClassEvaluate({
@@ -1012,7 +1013,8 @@ const fitness = (entity: Entity) => {
         if (engineInput.newClasses[newClassI].scaleupClass) {
             const geneI = newClassI * 3;
             const newRoomI = entity.chromosome[geneI] % engineInput.rooms.length;  // RoomI
-            const oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;    // oldClassI
+            let oldClassI = entity.chromosome[geneI + 1] % engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes.length;
+            oldClassI = engineInput.subjects[engineInput.newClasses[newClassI].subjectI].classes[oldClassI];
             const extraGene = entity.chromosome[geneI + 2];
             
             let geneEval = scaleupClassEvaluate({
@@ -1140,7 +1142,7 @@ export const engine = (input: any) => {
     console.log("-- Done!");
 
 
-    // console.log(JSON.stringify(engineOutput.classResult));
+    console.log(JSON.stringify(engineOutput.classResult));
 
     /*
     Room1 (4): 2[5-6, 10-12], 3[7-12], 4[2-4, 9-12] 
