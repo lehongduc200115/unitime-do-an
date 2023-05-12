@@ -3,10 +3,7 @@ import * as React from 'react';
 import helpers from 'src/helpers/helpers';
 import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
-import { VisualizeResultPanel } from './VisualizeResultPanel/VisualizeResultPanel';
 import { BKAlert } from 'src/components/Alert/BKAlert';
-import { BKTab } from 'src/components';
-import Timetable from './Timetable/Timetable';
 
 import Stepper from './Stepper';
 
@@ -86,9 +83,10 @@ export default function Test() {
   const [openInfo, setOpenInfo] = React.useState(false)
 
   return <div>
-    <BKTab tabLabels={["Stepper"]}>
+    {/* <BKTab tabLabels={["Stepper"]}>
       {[(<Stepper></Stepper>)]}
-    </BKTab>
+    </BKTab> */}
+    <Stepper></Stepper>
     <BKAlert
       severity="info"
       // title="My Alert"
