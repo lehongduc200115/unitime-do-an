@@ -46,29 +46,30 @@ const post: ServerRoute = {
     tags: ["api", "room"],
     validate: createValidator,
     handler: async (request: IRoomRequest, h: ResponseToolkit) => {
-      let timetable = request.payload.map((it) => it.weeklyTimetable);
-      timetable = timetable.map(
-        (it) =>
-          it.map((day) => utils.fillWith(day, 11, false)) as any as [
-            IDailyTimetable
-          ]
-      );
-      const payload = request.payload.map((it, index) => {
-        return {
-          ...it,
-          weeklyTimetable: utils.fillWith(
-            timetable[index],
-            5,
-            utils.fillWith(Array(), 11, false)
-          ),
-        };
-      });
-      const data = await RoomModel.insertMany(payload);
-      return h
-        .response({
-          data: data,
-        })
-        .code(HttpStatus.CREATED);
+      // let timetable = request.payload.map((it) => it.weeklyTimetable);
+      // timetable = timetable.map(
+      //   (it) =>
+      //     it.map((day) => utils.fillWith(day, 11, false)) as any as [
+      //       IDailyTimetable
+      //     ]
+      // );
+      // const payload = request.payload.map((it, index) => {
+      //   return {
+      //     ...it,
+      //     weeklyTimetable: utils.fillWith(
+      //       timetable[index],
+      //       5,
+      //       utils.fillWith(Array(), 11, false)
+      //     ),
+      //   };
+      // });
+      // const data = await RoomModel.insertMany(payload);
+      // return h
+      //   .response({
+      //     data: data,
+      //   })
+      //   .code(HttpStatus.CREATED);
+      return h.response().code(HttpStatus.OK);
     },
   },
 };

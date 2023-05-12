@@ -9,6 +9,7 @@ export const excelSchemaMapping: Record<string, any> = {
     LABEL: "label",
     DEPARTMENT: "department",
     CAPACITY: "capacity",
+    CAMPUS: "campus",
     TYPE: "classType",
   },
   enrollment: {
