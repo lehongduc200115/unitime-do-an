@@ -29,7 +29,7 @@ jobs:
         with:
           # username: ${{ secrets.DOCKERHUB_USERNAME }}
           # password: ${{ secrets.DOCKERHUB_TOKEN }}
-          username: lehongduc2001151@gmail.com
+          username: lehongduc2001151
           password: L3h@ngduc
       -
         name: Build and push
