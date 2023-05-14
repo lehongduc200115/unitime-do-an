@@ -64,7 +64,7 @@ export function BKStepper(props: IStepperProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Stepper activeStep={activeStep}>
+      <Stepper activeStep={activeStep} style={{marginBottom: "4rem"}}>
         {steps.map((label, index) => {
           const stepProps: { completed?: boolean } = {};
           const labelProps: {
