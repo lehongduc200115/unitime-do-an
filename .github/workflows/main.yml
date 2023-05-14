@@ -29,12 +29,13 @@ jobs:
         with:
           # username: ${{ secrets.DOCKERHUB_USERNAME }}
           # password: ${{ secrets.DOCKERHUB_TOKEN }}
-          username: lehongduc2001151
-          password: L3h@ngduc
+          username: lehongduc200115
+          password: dckr_pat_xjcXAKJBfMtxsDtwS624U-qnbAs
       -
         name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: user/app:latest
+          # secrets: "github_token=${{ secrets.GITHUB_TOKEN }}"
       - run: echo "🍏 This job's status is ${{ job.status }}."
