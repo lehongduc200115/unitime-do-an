@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Push image
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
@@ -39,13 +39,72 @@ jobs:
           tags: lehongduc200115/multidiscipline_project_2022:latest
           dockerfile: Dockerfile
           # secrets: "github_token=${{ secrets.GITHUB_TOKEN }}"
-      - name: Pull Docker image
-        run: docker pull lehongduc200115/multidiscipline_project_2022
-      - name: Stop and remove container
-        run: |
-          docker stop da-img-test || true
-          docker rm da-img-test || true
-      - name: Run new container
-        run: docker run -d --name da-img-test -p 3000:3000 lehongduc200115/multidiscipline_project_2022:latest
+      # - name: Pull Docker image
+      #   run: docker pull lehongduc200115/multidiscipline_project_2022
+      # - name: Stop and remove container
+      #   run: |
+      #     docker stop da-img-test || true
+      #     docker rm da-img-test || true
+      # - name: Run new container
+      #   run: docker run -d --name da-img-test -p 3000:3000 lehongduc200115/multidiscipline_project_2022:latest
+      - name: Deploy to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: 54.179.113.3
+          username: ec2-user
+          key: |
+            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
+          
+          script: |
+            docker pull lehongduc200115/multidiscipline_project_2022:latest
+            docker stop da-img-test || true
+            docker rm da-img-test || true
+            docker run -d --name da-img-test -p 3000:3000 lehongduc200115/multidiscipline_project_2022:latest
         # run: docker run -d --name da-img-test -p 3000:3000 myregistry.example.com/myimage:${{ github.sha }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
