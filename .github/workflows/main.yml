@@ -1,8 +1,68 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+name: Push image
+run-name: ${{ github.actor }} is deploying new version 🚀
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  # CI-CD-Pipeline:
+  #   runs-on: ubuntu-latest
+  #   steps:
+      # - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      # - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      # - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      # - name: Check out repository code
+      #   uses: actions/checkout@v3
+      # - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      # - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      # - name: List files in the repository
+      #   run: |
+      #     ls ${{ github.workspace }}
+      # - name: Change dir to frontend
+      #   run: cd frontend
+      # -
+      #   name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+      # -
+      #   name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+      # -
+      #   name: Login to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     # username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     # password: ${{ secrets.DOCKERHUB_TOKEN }}
+      #     username: lehongduc200115
+      #     password: dckr_pat_xjcXAKJBfMtxsDtwS624U-qnbAs
+      # -
+      #   name: Build and push
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     push: true
+      #     tags: lehongduc200115/multidiscipline_project_2022:latest
+      #     dockerfile: Dockerfile
+      #     # secrets: "github_token=${{ secrets.GITHUB_TOKEN }}"
+      # # - name: Pull Docker image
+      # #   run: docker pull lehongduc200115/multidiscipline_project_2022
+      # # - name: Stop and remove container
+      # #   run: |
+      # #     docker stop da-img-test || true
+      # #     docker rm da-img-test || true
+      # # - name: Run new container
+      # #   run: docker run -d --name da-img-test -p 3000:3000 lehongduc200115/multidiscipline_project_2022:latest
+      # - name: Deploy to EC2 instance
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: 54.179.113.3
+      #     username: ec2-user
+      #     key: ${{ secrets.DEPLOYMENT_KEY }}
+          
+      #     script: |
+      #       docker pull lehongduc200115/multidiscipline_project_2022:latest
+      #       docker stop da-img-test || true
+      #       docker rm da-img-test || true
+      #       docker run -d --name da-img-test -p 80:3000 lehongduc200115/multidiscipline_project_2022:latest
+      #   # run: docker run -d --name da-img-test -p 3000:3000 myregistry.example.com/myimage:${{ github.sha }}
+      # - run: echo "🍏 This job's status is ${{ job.status }}."
+  prepare:
+    name: Prepare for Dockerhub
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -15,4 +75,56 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - name: Change dir to frontend
+        run: cd frontend
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          # username: lehongduc200115
+          # password: dckr_pat_xjcXAKJBfMtxsDtwS624U-qnbAs
+  build: 
+    name: Build and Push onto Dockerhub
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: lehongduc200115/multidiscipline_project_2022:latest
+          dockerfile: Dockerfile
+  deploy: 
+    name: Deploy to EC2 instance
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          # host: 54.179.113.3
+          username: ec2-user
+          key: ${{ secrets.DEPLOYMENT_KEY }}
+          
+          script: |
+            docker pull lehongduc200115/multidiscipline_project_2022:latest
+            docker stop da-img-test || true
+            docker rm da-img-test || true
+            docker run -d --name da-img-test -p 80:3000 lehongduc200115/multidiscipline_project_2022:latest
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
+# Include jobs from other files
+# include:
+#   - path: build.yml
+#   - path: deploy.yml
+#   - path: preparation.yml

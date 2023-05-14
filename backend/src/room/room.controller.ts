@@ -45,7 +45,7 @@ const post: ServerRoute = {
     description: "Create list of rooms",
     tags: ["api", "room"],
     validate: createValidator,
-    handler: async (request: IRoomRequest, h: ResponseToolkit) => {
+    handler: async (_request: IRoomRequest, h: ResponseToolkit) => {
       // let timetable = request.payload.map((it) => it.weeklyTimetable);
       // timetable = timetable.map(
       //   (it) =>

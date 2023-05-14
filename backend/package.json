@@ -11,6 +11,7 @@
     "build": "tsc",
     "prestart": "node copyFile.js --source=.env.default --destination=.env && npm run build",
     "start": "nodemon dist/src/server.js",
+    "start-prod": "tsc && node dist/src/server.js",
     "start:prof": "npm run prestart && clinic bubbleprof -- node dist/src/server.js",
     "start:flame": "npm run prestart && clinic flame -- node dist/src/server.js"
   },
