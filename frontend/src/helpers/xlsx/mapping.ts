@@ -9,6 +9,7 @@ export const excelSchemaMapping: Record<string, any> = {
     LABEL: "label",
     DEPARTMENT: "department",
     CAPACITY: "capacity",
+    CAMPUS: "campus",
     TYPE: "classType",
   },
   enrollment: {
@@ -47,7 +48,8 @@ export const excelSchemaMapping: Record<string, any> = {
     PREFERED_CAMPUS: "preferedCampus",
     PREFERED_ROOM: "preferedRoom",
     UNRESTRICTED: "unrestricted",
-    ENTRANTS: "entrants",
+    MIN_ENTRANTS: "minEntrants",
+    MAX_ENTRANTS: "maxEntrants",
     CAPACITY: "capacity",
     PERIOD: "period",
     SCALEUP_CLASS: "scaleUpClass",

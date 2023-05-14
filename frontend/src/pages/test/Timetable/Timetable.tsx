@@ -19,25 +19,37 @@ const timeSlots = [
   '17:00',
 ];
 
-const defaultTimetable = [
-  { weekday: '2', time: '13:00-16:00', subject: 'Math', instructor: 'John', type: 'lec', entrants: 30 },
-  { weekday: '2', time: '9:00-12:00', subject: 'Science', instructor: 'Jane', type: 'lab', entrants: 20 },
-  { weekday: '2', time: '15:00-17:00', subject: 'History', instructor: 'Mike', type: 'lec', entrants: 35 },
-  { weekday: '3', time: '12:00-14:00', subject: 'English', instructor: 'Amy', type: 'lab', entrants: 25 },
-  { weekday: '3', time: '15:00-17:00', subject: 'Physics', instructor: 'David', type: 'lec', entrants: 40 },
-];
+// const defaultTimetable = [
+// { weekday: '2', time: '13:00-16:00', subject: 'Math', instructor: 'John', type: 'lec', entrants: 30 },
+// { weekday: '2', time: '9:00-12:00', subject: 'Science', instructor: 'Jane', type: 'lab', entrants: 20 },
+// { weekday: '2', time: '15:00-17:00', subject: 'History', instructor: 'Mike', type: 'lec', entrants: 35 },
+// { weekday: '3', time: '12:00-14:00', subject: 'English', instructor: 'Amy', type: 'lab', entrants: 25 },
+// { weekday: '3', time: '15:00-17:00', subject: 'Physics', instructor: 'David', type: 'lec', entrants: 40 },
+// ];
 
 
 interface TimetableCellProps {
-  id?: string;
-  time: string;
-  weekday?: string;
-  subject?: string;
-  instructor?: string;
-  type?: string;
-  entrants?: number;
-  capableStudents?: string[];
+  id: string,
+  subject: string,
+  instructor: string,
+  room: string,
+  weekday: string,
+  period: string,
+  time: string,
+  entrants: number,
+  capableStudents: string[],
+  type: "not_available" | "origin" | "new" | "modified" | "new_modified";
 }
+
+export const hue = {
+  not_available: "",
+  origin: "#f2f2f2", // light-gray
+  new: "#c3e6cb", //green
+  modified: "#ffb347", // orange pastel
+  new_modified: "#ffd1dc" // pink pastel
+}
+// interface IEngineOutputClass {
+// }
 
 interface TimetableRowProps {
   day: string;
@@ -45,14 +57,16 @@ interface TimetableRowProps {
 }
 
 const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }: TimetableCellProps) => {
-  const cellClass = type ?
-    (type === 'lec' ? 'lec-cell' : 'lab-cell')
-    : 'timetable-cell'
-    ;
+  const color = hue[type]
+
   const [showCapableStudents, setShowCapableStudents] = useState(false);
 
   return (
-    <td className={cellClass}>
+    <td style={{
+      fontWeight: "bold",
+      backgroundColor: color,
+      borderRadius: "5px"
+    }}>
       {subject && (
         <div className="timetable-subject">{subject}</div>
       )}
@@ -98,7 +112,7 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
         <TimetableCell
           key={i}
           time={timeSlot}
-          {...(eventMap[timeSlot] || {})}
+          {...(eventMap[timeSlot] || {} as TimetableCellProps)}
         />
       ))}
     </tr>
@@ -107,8 +121,8 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
 
 const TimetableView = (props: { timetableProps?: TimetableCellProps[] }) => {
   const { timetableProps } = props
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [timetable, setTimetable] = useState<TimetableCellProps[]>(defaultTimetable);
+  // const [currentTime, setCurrentTime] = useState(new Date());
+  const [timetable, setTimetable] = useState<TimetableCellProps[]>([]);
   // const [parsedTimetable, setParsedTimetable] = useState(defaultTimetable);
 
   React.useEffect(() => {
@@ -116,7 +130,7 @@ const TimetableView = (props: { timetableProps?: TimetableCellProps[] }) => {
       setTimetable(timetableProps)
   }, [timetableProps])
 
-  const parsedTimetable = (timetable || defaultTimetable).flatMap((it) => {
+  const parsedTimetable = (timetable).flatMap((it) => {
     return timeRangeParser(it.time).map(time => {
       const cloned = _.clone(it);
       if (cloned) cloned.time = time;

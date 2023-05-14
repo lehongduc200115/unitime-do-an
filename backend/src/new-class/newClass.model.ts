@@ -10,7 +10,8 @@ export interface INewClass {
   preferedRoom: string;
   preferedCampus: string;
   unrestricted: boolean;
-  entrants: number;
+  maxEntrants: number;
+  minEntrants: number;
   capacity: number;
   period?: number;
   scaleUpClass?: string;
@@ -54,7 +55,11 @@ const newClassSchema: Schema<NewClassDocument> = new Schema(
     capacity: {
       type: Number,
     },
-    entrants: {
+    maxEntrants: {
+      type: Number,
+      required: false,
+    },
+    minEntrants: {
       type: Number,
       required: false,
     },

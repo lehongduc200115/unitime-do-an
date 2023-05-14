@@ -45,11 +45,12 @@ export interface IEngineInputNewClass {
     subjectI: number,
     type: string,
     period: number,
-    entrants: number,
+    minEntrants: number,
+    maxEntrants: number,
     instructors: number[],      // Use engine's index (instructorI)
     preferedWeekday: number[],
     preferedPeriod: number[][], // Array of prefered startPeriodI, e.g. [[0,6],[7,11]]... (value is refined from origin, which still includes endPeriodId)
-    preferedCampus: number,
+    preferedCampus: string,
     preferedRoom: number[],
     scaleupClass: boolean,
     unrestricted: boolean,
@@ -87,16 +88,26 @@ export interface IEngineInputSubject {
     newStudents: number[],  // Use engine's index
     newClasses: number[],   // Use engine's index
 }
+interface IEngineOutputClassOmit {
+    name: string,
+    subjectI: number,       // Use engine's index
+    instructorI: number,    // Use engine's index
+    roomI: number,          // Use engine's index
+    weekday: number         // 
+    startPeriod: number,    // Use engine's index
+    endPeriod: number,      // Use engine's index
+    students: number[]      // Use engine's index
+}
 
-export interface IEngineOutputResult {
+export interface IEngineOutputClass {
     id: string,
     subject: string,
     instructor: string,
-    type: string,
-    entrants: number,
     room: string,
     weekday: string,
     period: string,
     time: string,
-    capableStudents: any[],
+    entrants: number,
+    capableStudents: string[],
+    type: "not_available" | "origin" | "new" | "modified" | "new_modified";
 }

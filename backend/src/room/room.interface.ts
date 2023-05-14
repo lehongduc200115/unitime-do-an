@@ -2,8 +2,9 @@ import { ClassType, Status } from "../common/enum";
 
 export interface IRoomPayload {
   id: string;
-  department: string;
-  weeklyTimetable: [IDailyTimetable];
+  label: string;
+  campus: string;
+  department?: string;
   status?: Status;
   capacity: number;
   classType: ClassType;

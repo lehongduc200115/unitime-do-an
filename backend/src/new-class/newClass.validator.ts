@@ -20,7 +20,8 @@ export const createValidator: RouteOptionsValidate = {
       preferedRoom: Joi.string().optional(),
       preferedCampus: Joi.string().optional().validate(["true", "false"]),
       unrestricted: Joi.string().optional(),
-      entrants: Joi.number().optional(),
+      maxEntrants: Joi.number().optional(),
+      minEntrants: Joi.number().optional(),
       period: Joi.string().optional(),
       scaleUpClass: Joi.string().optional(),
     })
