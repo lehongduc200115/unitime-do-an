@@ -45,6 +45,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
+    "start-prod": "npm run build && serve -s build -l 3000",
     "test": "craco test",
     "eject": "craco eject"
   },

@@ -14,6 +14,8 @@ exports.getValidator = {
 exports.createValidator = {
     payload: joi_1.default.array().items(joi_1.default.object({
         id: joi_1.default.string(),
+        label: joi_1.default.string().optional(),
+        campus: joi_1.default.string().optional(),
         department: joi_1.default.string().optional(),
         capacity: joi_1.default.number(),
         classType: joi_1.default.string().optional(),

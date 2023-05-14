@@ -39,6 +39,9 @@ const roomSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    campus: {
+        type: String,
+    },
     status: {
         type: String,
         default: enum_1.Status.ACTIVE,

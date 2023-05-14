@@ -4,7 +4,6 @@ const room_model_1 = require("./room.model");
 const httpConstant_1 = require("../common/httpConstant");
 const room_constant_1 = require("./room.constant");
 const room_validator_1 = require("./room.validator");
-const utils_1 = require("../common/utils");
 const getList = {
     method: httpConstant_1.HttpMethod.GET,
     path: `/${room_constant_1.constants.ROOM_PATH}`,
@@ -41,21 +40,31 @@ const post = {
         description: "Create list of rooms",
         tags: ["api", "room"],
         validate: room_validator_1.createValidator,
-        handler: async (request, h) => {
-            let timetable = request.payload.map((it) => it.weeklyTimetable);
-            timetable = timetable.map((it) => it.map((day) => utils_1.utils.fillWith(day, 11, false)));
-            const payload = request.payload.map((it, index) => {
-                return {
-                    ...it,
-                    weeklyTimetable: utils_1.utils.fillWith(timetable[index], 5, utils_1.utils.fillWith(Array(), 11, false)),
-                };
-            });
-            const data = await room_model_1.RoomModel.insertMany(payload);
-            return h
-                .response({
-                data: data,
-            })
-                .code(httpConstant_1.HttpStatus.CREATED);
+        handler: async (_request, h) => {
+            // let timetable = request.payload.map((it) => it.weeklyTimetable);
+            // timetable = timetable.map(
+            //   (it) =>
+            //     it.map((day) => utils.fillWith(day, 11, false)) as any as [
+            //       IDailyTimetable
+            //     ]
+            // );
+            // const payload = request.payload.map((it, index) => {
+            //   return {
+            //     ...it,
+            //     weeklyTimetable: utils.fillWith(
+            //       timetable[index],
+            //       5,
+            //       utils.fillWith(Array(), 11, false)
+            //     ),
+            //   };
+            // });
+            // const data = await RoomModel.insertMany(payload);
+            // return h
+            //   .response({
+            //     data: data,
+            //   })
+            //   .code(HttpStatus.CREATED);
+            return h.response().code(httpConstant_1.HttpStatus.OK);
         },
     },
 };
