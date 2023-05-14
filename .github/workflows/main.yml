@@ -58,6 +58,6 @@ jobs:
             docker pull lehongduc200115/multidiscipline_project_2022:latest
             docker stop da-img-test || true
             docker rm da-img-test || true
-            docker run -d --name da-img-test -p 3000:3000 lehongduc200115/multidiscipline_project_2022:latest
+            docker run -d --name da-img-test -p 80:3000 lehongduc200115/multidiscipline_project_2022:latest
         # run: docker run -d --name da-img-test -p 3000:3000 myregistry.example.com/myimage:${{ github.sha }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
