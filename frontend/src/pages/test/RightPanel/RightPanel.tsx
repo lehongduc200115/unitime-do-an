@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+import ScheduleDetail from "./ScheduleDetail"
+
+const TEST_DATA = {
+  "id": "1",
+  "subject": "1 - GT1",
+  "instructor": "1 - GT1",
+  "room": "1",
+  "weekday": "2",
+  "period": "2 - 4",
+  "time": "7:00 - 10:00",
+  "entrants": 4,
+  "capableStudents": ["1 - C.O.A.", "2 - C.O.B.", "6 - E.E.G.", "7 - E.E.H."],
+  "type": "origin"
+}
 
 const RightPanel = () => {
   const [properties, setProperties] = useState({
@@ -7,12 +21,12 @@ const RightPanel = () => {
     size: 'medium',
   });
 
-  const handlePropertyChange = (propertyName: any, newValue: any) => {
-    setProperties({
-      ...properties,
-      [propertyName]: newValue,
-    });
-  };
+  // const handlePropertyChange = (propertyName: any, newValue: any) => {
+  //   setProperties({
+  //     ...properties,
+  //     [propertyName]: newValue,
+  //   });
+  // };
 
   return (
     <div
@@ -28,34 +42,8 @@ const RightPanel = () => {
         zIndex: 999, // ensure panel is above other elements
       }}
     >
-      <h2>Properties</h2>
-      <label>
-        Name:
-        <input
-          type="text"
-          value={properties.name}
-          onChange={(e) => handlePropertyChange('name', e.target.value)}
-        />
-      </label>
-      <label>
-        Color:
-        <input
-          type="color"
-          value={properties.color}
-          onChange={(e) => handlePropertyChange('color', e.target.value)}
-        />
-      </label>
-      <label>
-        Size:
-        <select
-          value={properties.size}
-          onChange={(e) => handlePropertyChange('size', e.target.value)}
-        >
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="large">Large</option>
-        </select>
-      </label>
+      <ScheduleDetail schedule={TEST_DATA
+      }></ScheduleDetail>
     </div>
   );
 };

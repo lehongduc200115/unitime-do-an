@@ -52,10 +52,6 @@ const Stepper = () => {
           steps.map((it, idx) => {
             let component = <Uploader onUpload={onUpload}></Uploader>
 
-            if (idx === 0) {
-              component = <RightPanel></RightPanel>
-            }
-
             if (idx === 1) {
               component = <Sheets tables={tables} />
             } else if (idx === 2) {
@@ -74,6 +70,7 @@ const Stepper = () => {
           })
         }
       </BKStepper>
+      <RightPanel></RightPanel>
       <BKAlert
         severity="info"
         // title="My Alert"
