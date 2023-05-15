@@ -2,11 +2,12 @@ import * as React from "react";
 import { FlexCol } from "src/components/FlexCol/FlexCol";
 // import { BKTable } from "src/components/Table/BKTable";
 import TimetableView from "../Timetable/Timetable";
-import { Typography } from "@mui/material";
+import { Button } from "@mui/material";
 
 import { hue } from "../Timetable/Timetable"
 import { BKTab, BKTable } from "@components";
 import _ from "lodash";
+// import { exportToExcel } from 'react-json-to-excel';
 
 interface IEngineOutputClass {
   id: string;
@@ -53,6 +54,7 @@ export const VisualizeResultPanel = (
             return timetable ?
               (
                 <FlexCol>
+                  {/* <Button onClick={() => exportToExcel(timetable, 'timetable')}>Export Timetable</Button> */}
                   <div className="legend">
 
                     {Object.keys(hue).map((status) => (

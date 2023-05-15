@@ -1,8 +1,8 @@
 import React from 'react';
 import { Typography, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+// import { makeStyles } from '@mui/styles';
 
-const useStyles = makeStyles({
+const classes = {
   tableHeader: {
     paddingTop: '12px',
     paddingBottom: '12px',
@@ -13,18 +13,18 @@ const useStyles = makeStyles({
   },
   tableCell: {
     borderBottom: 'none',
-    whiteSpace: 'nowrap',
+    // whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     padding: "0 !important",
     height: "40px",
     fontWeight: "normal"
   },
-});
+};
 
 const ScheduleDetail = ({ schedule }: any) => {
   const { id, subject, instructor, room, weekday, period, time, entrants, capableStudents, type } = schedule;
-  const classes = useStyles();
+  // const classes = useStyles();
 
   return (
     <>
@@ -38,44 +38,44 @@ const ScheduleDetail = ({ schedule }: any) => {
         <Table style={{ border: 'none' }}>
           <TableBody>
             <TableRow>
-              <TableCell className={classes.tableHeader}>ID</TableCell>
-              <TableCell className={classes.tableCell}>{id}</TableCell>
+              <TableCell style={classes.tableHeader}>ID</TableCell>
+              <TableCell style={classes.tableCell}>{id}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Subject</TableCell>
-              <TableCell className={classes.tableCell}>{subject}</TableCell>
+              <TableCell style={classes.tableHeader}>Subject</TableCell>
+              <TableCell style={classes.tableCell}>{subject}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Instructor</TableCell>
-              <TableCell className={classes.tableCell}>{instructor}</TableCell>
+              <TableCell style={classes.tableHeader}>Instructor</TableCell>
+              <TableCell style={classes.tableCell}>{instructor}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Room</TableCell>
-              <TableCell className={classes.tableCell}>{room}</TableCell>
+              <TableCell style={classes.tableHeader}>Room</TableCell>
+              <TableCell style={classes.tableCell}>{room}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Weekday</TableCell>
-              <TableCell className={classes.tableCell}>{weekday}</TableCell>
+              <TableCell style={classes.tableHeader}>Weekday</TableCell>
+              <TableCell style={classes.tableCell}>{weekday}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Period</TableCell>
-              <TableCell className={classes.tableCell}>{period}</TableCell>
+              <TableCell style={classes.tableHeader}>Period</TableCell>
+              <TableCell style={classes.tableCell}>{period}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Time</TableCell>
-              <TableCell className={classes.tableCell}>{time}</TableCell>
+              <TableCell style={classes.tableHeader}>Time</TableCell>
+              <TableCell style={classes.tableCell}>{time}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Entrants</TableCell>
-              <TableCell className={classes.tableCell}>{entrants}</TableCell>
+              <TableCell style={classes.tableHeader}>Entrants</TableCell>
+              <TableCell style={classes.tableCell}>{entrants}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Capable Students</TableCell>
-              <TableCell className={classes.tableCell}>{capableStudents.join(', ')}</TableCell>
+              <TableCell style={classes.tableHeader}>Capable Students</TableCell>
+              <TableCell style={classes.tableCell}>{capableStudents.join(', ')}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className={classes.tableHeader}>Type</TableCell>
-              <TableCell className={classes.tableCell}>{type}</TableCell>
+              <TableCell style={classes.tableHeader}>Type</TableCell>
+              <TableCell style={classes.tableCell}>{type}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
