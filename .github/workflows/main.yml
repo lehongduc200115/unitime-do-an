@@ -106,7 +106,7 @@ jobs:
   deploy: 
     name: Deploy to EC2 instance
     runs-on: ubuntu-latest
-    needs: build
+    needs: prepare
     steps:
       - name: Deploy to EC2 instance
         uses: appleboy/ssh-action@master
@@ -122,9 +122,3 @@ jobs:
             docker rm da-img-test || true
             docker run -d --name da-img-test -p 80:3000 lehongduc200115/multidiscipline_project_2022:latest
       - run: echo "🍏 This job's status is ${{ job.status }}."
-
-# Include jobs from other files
-# include:
-#   - path: build.yml
-#   - path: deploy.yml
-#   - path: preparation.yml
