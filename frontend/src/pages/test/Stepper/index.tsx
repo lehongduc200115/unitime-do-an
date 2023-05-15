@@ -8,6 +8,7 @@ import { useState } from 'react';
 import constants from '../../../helpers/constants';
 import { VisualizeResultPanel } from '../VisualizeResultPanel/VisualizeResultPanel';
 import Sheets from '../Sheets';
+import RightPanel from '../RightPanel/RightPanel';
 
 const steps = ['Import sheets', 'Review and make changes', 'Solve', 'Tune Result'];
 
@@ -50,6 +51,10 @@ const Stepper = () => {
         {
           steps.map((it, idx) => {
             let component = <Uploader onUpload={onUpload}></Uploader>
+
+            if (idx === 0) {
+              component = <RightPanel></RightPanel>
+            }
 
             if (idx === 1) {
               component = <Sheets tables={tables} />
