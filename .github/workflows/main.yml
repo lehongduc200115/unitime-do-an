@@ -90,7 +90,7 @@ jobs:
           # username: ${{ secrets.DOCKERHUB_USERNAME }}
           # password: ${{ secrets.DOCKERHUB_TOKEN }}
           username: lehongduc200115
-          password: dckr_pat_xjcXAKJBfMtxsDtwS624U-qnbAs
+          password: dckr_pat_kvwI-DlDXSQLe4NybGu0Y-bkQkk
   build: 
     name: Build and Push onto Dockerhub
     runs-on: ubuntu-latest
