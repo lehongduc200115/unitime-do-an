@@ -1,0 +1,19 @@
+.table-header {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-weight: bold !important;
+  padding: 0 !important;
+  padding-left: 1rem !important;
+  height: 40px;
+  /* color: red; */
+  font-weight: bold;
+}
+
+.table-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* padding: 0 !important; */
+  height: 30px;
+  font-weight: normal;
+  padding: 4px !important;
+}

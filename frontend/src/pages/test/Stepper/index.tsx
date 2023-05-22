@@ -9,6 +9,7 @@ import constants from '../../../helpers/constants';
 import { VisualizeResultPanel } from '../VisualizeResultPanel/VisualizeResultPanel';
 import Sheets from '../Sheets';
 import RightPanel from '../RightPanel/RightPanel';
+import Grid from '@mui/material/Grid';
 
 const steps = ['Import sheets', 'Review and make changes', 'Solve', 'Tune Result'];
 
@@ -36,6 +37,7 @@ const Stepper = () => {
   // const [fetchResult, setFetchResult] = React.useState(null)
   const [openAlert, setOpenAlert] = useState(false)
   const [openInfo, setOpenInfo] = useState(false)
+  const [showPanel, setShowPanel] = useState(true)
 
   const [tables, setTables] = useState<{
     columns: string[],
@@ -45,32 +47,36 @@ const Stepper = () => {
 
   return (
     <>
-      <BKStepper
-        labels={steps}
-      >
-        {
-          steps.map((it, idx) => {
-            let component = <Uploader onUpload={onUpload}></Uploader>
+      <Grid container spacing={1}>
+        <Grid item xs="auto">
+          <BKStepper
+            labels={steps}
+          >
+            {
+              steps.map((it, idx) => {
+                let component = <Uploader onUpload={onUpload}></Uploader>
 
-            if (idx === 1) {
-              component = <Sheets tables={tables} />
-            } else if (idx === 2) {
-              return (<div>
-                {
-                  (backendResponse && backendResponse.data && backendResponse.data.status === "success")
-                    // ? (JSON.stringify(backendResponse))
-                    ? (<VisualizeResultPanel {...backendResponse.data} />)
-                    // ? <Timetable timetableProps={backendResponse.data.data.result[0]}></Timetable>
-                    : ""
+                if (idx === 1) {
+                  component = <Sheets tables={tables} />
+                } else if (idx === 2) {
+                  return (<div>
+                    {
+                      (backendResponse && backendResponse.data && backendResponse.data.status === "success")
+                      && (<VisualizeResultPanel {...backendResponse.data} />)
+                    }
+                  </div>)
                 }
-              </div>)
-            }
 
-            return component;
-          })
-        }
-      </BKStepper>
-      <RightPanel></RightPanel>
+                return component;
+              })
+            }
+          </BKStepper>
+        </Grid>
+        {showPanel &&
+          <Grid item xs={4}>
+            <RightPanel />
+          </Grid>}
+      </Grid>
       <BKAlert
         severity="info"
         // title="My Alert"
