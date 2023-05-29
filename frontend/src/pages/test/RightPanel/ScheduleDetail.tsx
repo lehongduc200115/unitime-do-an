@@ -1,30 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Typography, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
-// import { makeStyles } from '@mui/styles';
+import { TextField } from '@mui/material';
+import { Box } from '@mui/material';
 
-const classes = {
-  tableHeader: {
-    paddingTop: '12px',
-    paddingBottom: '12px',
-    fontWeight: 'bold !important',
-    padding: "0 !important",
-    paddingLeft: "1rem !important",
-    height: "40px",
-  },
-  tableCell: {
-    borderBottom: 'none',
-    // whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    padding: "0 !important",
-    height: "40px",
-    fontWeight: "normal"
-  },
-};
+
+import './styles.css';
 
 const ScheduleDetail = ({ schedule }: any) => {
   const { id, subject, instructor, room, weekday, period, time, entrants, capableStudents, type } = schedule;
-  // const classes = useStyles();
+  const [isStudentExpanded, setIsStudentExpaned] = useState(false);
 
   return (
     <>
@@ -36,46 +20,71 @@ const ScheduleDetail = ({ schedule }: any) => {
       </Typography>
       <TableContainer>
         <Table style={{ border: 'none' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell className='table-header'>Property</TableCell>
+              <TableCell className='table-header' style={{
+                paddingLeft: "0px !important",
+              }}>Value</TableCell>
+            </TableRow>
+          </TableHead>
           <TableBody>
             <TableRow>
-              <TableCell style={classes.tableHeader}>ID</TableCell>
-              <TableCell style={classes.tableCell}>{id}</TableCell>
+              <TableCell className='table-header'>ID</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox enableEdit={false}>{id}</EditableBox>
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Subject</TableCell>
-              <TableCell style={classes.tableCell}>{subject}</TableCell>
+              <TableCell className='table-header'>Subject</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{subject}</EditableBox>
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Instructor</TableCell>
-              <TableCell style={classes.tableCell}>{instructor}</TableCell>
+              <TableCell className='table-header'>Instructor</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{instructor}</EditableBox></TableCell>
+
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Room</TableCell>
-              <TableCell style={classes.tableCell}>{room}</TableCell>
+              <TableCell className='table-header'>Room</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{room}</EditableBox></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Weekday</TableCell>
-              <TableCell style={classes.tableCell}>{weekday}</TableCell>
+              <TableCell className='table-header'>Weekday</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{weekday}</EditableBox></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Period</TableCell>
-              <TableCell style={classes.tableCell}>{period}</TableCell>
+              <TableCell className='table-header'>Period</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{period}</EditableBox></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Time</TableCell>
-              <TableCell style={classes.tableCell}>{time}</TableCell>
+              <TableCell className='table-header'>Time</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{time}</EditableBox></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Entrants</TableCell>
-              <TableCell style={classes.tableCell}>{entrants}</TableCell>
+              <TableCell className='table-header'>Entrants</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox>{entrants}</EditableBox></TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Capable Students</TableCell>
-              <TableCell style={classes.tableCell}>{capableStudents.join(', ')}</TableCell>
+              <TableCell className='table-header'>Capable Students</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox onClick={() => setIsStudentExpaned((cur) => !cur)}>
+                  {!isStudentExpanded ? `${capableStudents.length} students` : capableStudents.join(', ')}
+                </EditableBox>
+              </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell style={classes.tableHeader}>Type</TableCell>
-              <TableCell style={classes.tableCell}>{type}</TableCell>
+              <TableCell className='table-header'>Type</TableCell>
+              <TableCell className='table-cell'>
+                <EditableBox enableEdit={false}>{type}</EditableBox>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -83,5 +92,26 @@ const ScheduleDetail = ({ schedule }: any) => {
     </>
   );
 };
+
+const EditableBox = ({ children, onClick, enableEdit = true }: any) => {
+  return (
+    <Box
+      borderRadius={2}
+      p={2}
+      // bgcolor="#f5f5f5"
+      height={40}
+      sx={{
+        padding: "8px !important",
+        '&:hover': enableEdit && {
+          border: "1px solid",
+          borderColor: "primary.main",
+          cursor: "pointer",
+          opacity: [0.9, 0.8, 0.7],
+        },
+      }}
+      onClick={onClick}>
+      {children}
+    </Box>)
+}
 
 export default ScheduleDetail;
