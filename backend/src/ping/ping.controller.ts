@@ -10,7 +10,7 @@ const ping: ServerRoute = {
     notes: "To check is service pongs on a ping",
     tags: ["api", "ping"],
     handler: async (_, h) => {
-      return h.response("pong").code(200);
+      return h.response("pong").code(204);
     },
   },
 };
