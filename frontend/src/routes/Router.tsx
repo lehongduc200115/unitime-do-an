@@ -21,23 +21,25 @@ import { BKDrawer } from '@components';
 
 const Router = () => {
   return (
-    <BKDrawer></BKDrawer>
-    // <BrowserRouter>
-    //   {/* <Navigation></Navigation> */}
-    //   <BKDrawer></BKDrawer>
+    // <BKDrawer></BKDrawer>
+    <BrowserRouter>
+      {/* <Navigation></Navigation> */}
+      <BKDrawer></BKDrawer>
+      {/* <Routes>
+        <Route path="*" element={< Home />}></Route>
+      </Routes> */}
+      {/* //   <Routes>
+//     <Route path="*" element={< Home />}></Route> 
+//     <Route path='/room' element={< Room />} />
+//     <Route path='/instructor' element={< Instructor />} />
+//     <Route path='/student' element={< Student />} />
+//     <Route path='/subject' element={< Subject />} />
+//     <Route path='/login' element={< Login />} />
+//     <Route path='/test' element={< Test />} />
+//     <Route path='/register' element={< Register />} />
+//   </Routes> */}
 
-    //   <Routes>
-    //     <Route path="*" element={< Home />}></Route> */
-    //     <Route path='/room' element={< Room />} />
-    //     <Route path='/instructor' element={< Instructor />} />
-    //     <Route path='/student' element={< Student />} />
-    //     <Route path='/subject' element={< Subject />} />
-    //     <Route path='/login' element={< Login />} />
-    //     <Route path='/test' element={< Test />} />
-    //     <Route path='/register' element={< Register />} />
-    //   </Routes>
-
-    // </BrowserRouter>
+    </BrowserRouter>
   )
 }
 

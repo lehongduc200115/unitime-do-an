@@ -6,7 +6,12 @@ import { hue } from "../Timetable/Timetable"
 import { BKTab, BKTable } from "@components";
 import _ from "lodash";
 import { SolutionTable } from "./SolutionTable";
-import { Button, ButtonGroup } from "@mui/material";
+import { Button, ButtonGroup, Grid } from "@mui/material";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Box from "@mui/system/Box";
 
 interface IEngineOutputClass {
   id: string;
@@ -39,6 +44,12 @@ export const VisualizeResultPanel = (
   const [viewData, setViewData] = React.useState<any>({});
   const [mode, setMode] = React.useState<"table" | "room" | "lecturer">("table")
   // const [roomAssociated, setRoomAssociated] = React.useState<string>(null)
+  const [age, setAge] = React.useState('');
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setAge(event.target.value as string);
+  };
+
 
 
   React.useEffect(() => {
@@ -54,11 +65,35 @@ export const VisualizeResultPanel = (
               (
                 <FlexCol>
                   {/* <Button onClick={() => exportToExcel(timetable, 'timetable')}>Export Timetable</Button> */}
-                  <ButtonGroup variant="outlined" aria-label="outlined button group">
-                    <Button variant={mode === 'room' ? "contained" : "outlined"} onClick={() => setMode("room")}>Room</Button>
-                    <Button variant={mode === 'lecturer' ? "contained" : "outlined"} onClick={() => setMode("lecturer")}>Lecturer</Button>
-                    <Button variant={mode === 'table' ? "contained" : "outlined"} onClick={() => setMode("table")}>Table</Button>
-                  </ButtonGroup>
+                  <Grid container>
+                    <Grid xs={6}>
+                      <span style={{ marginRight: "10px" }}>Group by:</span>
+                      <ButtonGroup variant="outlined" aria-label="outlined button group">
+                        <Button variant={mode === 'room' ? "contained" : "outlined"} onClick={() => setMode("room")}>Room</Button>
+                        <Button variant={mode === 'lecturer' ? "contained" : "outlined"} onClick={() => setMode("lecturer")}>Lecturer</Button>
+                        <Button variant={mode === 'table' ? "contained" : "outlined"} onClick={() => setMode("table")}>Table</Button>
+                      </ButtonGroup>
+                    </Grid>
+                    <Grid>
+                      <span style={{ marginRight: "10px" }}>Filter by:</span>
+                      <Box sx={{ minWidth: 120 }}>
+                        <FormControl fullWidth>
+                          <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                          <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={age}
+                            label="Age"
+                            onChange={handleChange}
+                          >
+                            <MenuItem value={10}>Ten</MenuItem>
+                            <MenuItem value={20}>Twenty</MenuItem>
+                            <MenuItem value={30}>Thirty</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                  </Grid>
                   <div className="legend">
 
                     {Object.keys(hue).map((status) => (

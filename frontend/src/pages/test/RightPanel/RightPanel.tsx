@@ -15,12 +15,11 @@ const TEST_DATA = {
   "type": "origin"
 }
 
-const RightPanel = () => {
-  const [expanded, setExpanded] = useState(true);
+interface IRightPanelProps {
+  togglePanel: any
+}
 
-  const toggleExpand = () => {
-    setExpanded(!expanded);
-  };
+const RightPanel = ({ togglePanel }: IRightPanelProps) => {
   // const [properties, setProperties] = useState({
   //   name: 'My Component',
   //   color: '#ffffff',
@@ -51,28 +50,6 @@ const RightPanel = () => {
         transition: 'right 0.3s', // Add transition effect
       }}
     >
-      <Button
-        style={{
-          // position: 'absolute',
-          // top: '100px',
-          // right: '100px',
-          padding: '4px',
-          borderRadius: '40%',
-          border: 'none',
-          outline: 'none',
-          cursor: 'pointer',
-          marginTop: '4px',
-          marginLeft: '4px'
-        }}
-        sx={{
-          "&:hover": {
-            backgroundColor: '#fff',
-          }
-        }}
-        onClick={toggleExpand}
-      >
-        {expanded ? '>>' : '<<'}
-      </Button>
       <ScheduleDetail schedule={TEST_DATA
       }></ScheduleDetail>
     </div>

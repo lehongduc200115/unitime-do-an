@@ -10,6 +10,7 @@ import { VisualizeResultPanel } from '../VisualizeResultPanel/VisualizeResultPan
 import Sheets from '../Sheets';
 import RightPanel from '../RightPanel/RightPanel';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 
 const steps = ['Import sheets', 'Review and make changes', 'Solve', 'Tune Result'];
 
@@ -39,6 +40,10 @@ const Stepper = () => {
   const [openInfo, setOpenInfo] = useState(false)
   const [showPanel, setShowPanel] = useState(true)
 
+  const togglePanel = () => {
+    setShowPanel(isShow => !isShow)
+  }
+
   const [tables, setTables] = useState<{
     columns: string[],
     rows: object[],
@@ -48,7 +53,7 @@ const Stepper = () => {
   return (
     <>
       <Grid container spacing={1}>
-        <Grid item xs="auto">
+        <Grid item xs>
           <BKStepper
             labels={steps}
           >
@@ -74,8 +79,30 @@ const Stepper = () => {
         </Grid>
         {showPanel &&
           <Grid item xs={4}>
-            <RightPanel />
+            <RightPanel togglePanel={togglePanel} />
           </Grid>}
+        <Button
+          style={{
+            // position: 'absolute',
+            // top: '100px',
+            // right: '100px',
+            padding: '4px',
+            borderRadius: '40%',
+            border: 'none',
+            outline: 'none',
+            cursor: 'pointer',
+            marginTop: '4px',
+            marginLeft: '4px'
+          }}
+          sx={{
+            "&:hover": {
+              backgroundColor: '#fff',
+            }
+          }}
+          onClick={togglePanel}
+        >
+          {showPanel ? '>>' : '<<'}
+        </Button>
       </Grid>
       <BKAlert
         severity="info"

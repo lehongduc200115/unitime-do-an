@@ -5,7 +5,7 @@ import { IImportedData } from './interface';
 import constants from '../../helpers/constants'
 import { BKAlert } from 'src/components/Alert/BKAlert';
 
-import Stepper from './Stepper';
+import Stepper from './Stepper/Stepper';
 
 const visualizeData = (importedData: IImportedData) => {
   console.log(`importedData: ${JSON.stringify(importedData)}`)

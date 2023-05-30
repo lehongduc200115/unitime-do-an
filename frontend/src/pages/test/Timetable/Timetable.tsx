@@ -62,11 +62,12 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
   const [showCapableStudents, setShowCapableStudents] = useState(false);
 
   return (
-    <td style={{
-      fontWeight: "bold",
-      backgroundColor: color,
-      borderRadius: "5px"
-    }}>
+    // <td style={{
+    //   fontWeight: "bold",
+    //   backgroundColor: color,
+    //   borderRadius: "5px"
+    // }}>
+    <div>
       {subject && (
         <div className="timetable-subject">{subject}</div>
       )}
@@ -92,30 +93,100 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
           )}
         </>
       )}
-    </td>
+    </div>
+    // </td>
   );
 };
+
+// const TimetableRow = ({ day, events }: TimetableRowProps) => {
+//   const eventMap: { [time: string]: TimetableCellProps } = {};
+
+//   events.forEach(cell => {
+//     eventMap[cell.time] = cell
+//   });
+
+//   console.log(`events: ${JSON.stringify(eventMap)}`)
+
+//   return (
+//     <tr>
+//       <th>{day}</th>
+//       {timeSlots.map((timeSlot, i) => (
+//         <TimetableCell
+//           key={i}
+//           time={timeSlot}
+//           {...(eventMap[timeSlot] || {} as TimetableCellProps)}
+//         />
+//       ))}
+//     </tr>
+//   );
+// };
 
 const TimetableRow = ({ day, events }: TimetableRowProps) => {
   const eventMap: { [time: string]: TimetableCellProps } = {};
 
   events.forEach(cell => {
-    eventMap[cell.time] = cell
+    eventMap[cell.time] = cell;
   });
 
-  console.log(`events: ${JSON.stringify(eventMap)}`)
+  // Create an array to store the merged cells
+  const mergedCells: { start: string; end: string }[] = [];
+
+  // Iterate over the time slots to find consecutive cells with the same properties
+  let start: string | null = null;
+  let end: string | null = null;
+  timeSlots.forEach(timeSlot => {
+    const cell = eventMap[timeSlot];
+
+    if (start === null) {
+      // If the start is not set, initialize it
+      start = timeSlot;
+    } else if (cell && _.isEqual(cell?.id, eventMap[start]?.id)) {
+      // If the cell is not null and has the same properties as the start cell, update the end
+      end = timeSlot;
+      // mergedCells.push({ start, end });
+
+      // Reset the start to the current time slot
+      // start = timeSlot;
+    } else {
+      if (!end) end = start;
+      // If the cell is null or has different properties, create a merged cell with the start time
+      // const end = start;
+      mergedCells.push({ start, end });
+
+      // Update the start to the current time slot
+      start = timeSlot;
+      end = null;
+    }
+  });
+
+  // If the start is not null at the end, create a merged cell with the start and end as the same time slot
+  if (start !== null) {
+    mergedCells.push({ start, end });
+  }
 
   return (
     <tr>
       <th>{day}</th>
-      {timeSlots.map((timeSlot, i) => (
-        <TimetableCell
-          key={i}
-          time={timeSlot}
-          {...(eventMap[timeSlot] || {} as TimetableCellProps)}
-        />
-      ))}
-    </tr>
+      {mergedCells.map(({ start, end }, i) => {
+        // Find the merged cell that contains the current time slot
+        // const mergedCell = mergedCells.find(cell => cell.start === timeSlot);
+        const color = hue[eventMap[start]?.type];
+
+
+        return (
+          <td colSpan={eventMap[start] ? timeSlots.indexOf(end) - timeSlots.indexOf(start) + 1 : undefined} key={i} style={{
+            fontWeight: "bold",
+            backgroundColor: color,
+            borderRadius: "5px"
+          }}>
+            <TimetableCell
+              time={start}
+              {...(eventMap[start] || {} as TimetableCellProps)}
+            />
+          </td>
+        );
+      })}
+    </tr >
   );
 };
 
