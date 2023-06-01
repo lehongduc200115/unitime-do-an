@@ -29,7 +29,7 @@ interface TimetableCellProps {
 interface EditableTableProps {
   columns: string[];
   name?: string;
-  data: any[];
+  data: TimetableCellProps[];
   setData: (newData: any) => void;
   setViewData: () => void;
 }
@@ -60,7 +60,7 @@ export function SolutionTable(props: EditableTableProps) {
 
   const handleSave = (index: number) => {
     const newData = [...props.data];
-    newData[index] = editData;
+    newData[index] = editData as any;
     // Save the new data to your data source
     // props.setData(newData);
     setEditIndex(-1);
@@ -234,7 +234,7 @@ export function SolutionTable(props: EditableTableProps) {
                 {row["entrants"]?.toString()}
               </TableCell>
 
-              <TableCell key={"capableStudents"}>
+              <TableCell key={"capableStudents"} onClick={() => setIsStudentExpaned(expanded => !expanded)}>
                 {/* {row["capableStudents"]?.toString()} */}
 
                 {/* <EditableBox onClick={() => setIsStudentExpaned((cur) => !cur)}> */}

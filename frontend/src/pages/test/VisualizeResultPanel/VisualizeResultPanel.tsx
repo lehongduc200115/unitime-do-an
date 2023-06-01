@@ -42,9 +42,9 @@ export const VisualizeResultPanel = (
   console.log(`data from VisualizeResultPanel: ${JSON.stringify(props.data.result)}`)
   const [data, setData] = React.useState<any>(props.data.result);
   const [viewData, setViewData] = React.useState<any>({});
-  const [mode, setMode] = React.useState<"table" | "room" | "lecturer">("table")
+  const [mode, setMode] = React.useState<"id" | "room" | "instructor">("id")
   // const [roomAssociated, setRoomAssociated] = React.useState<string>(null)
-  const [age, setAge] = React.useState('');
+  const [age, setAge] = React.useState(null);
 
   const handleChange = (event: SelectChangeEvent) => {
     setAge(event.target.value as string);
@@ -70,15 +70,22 @@ export const VisualizeResultPanel = (
                       <span style={{ marginRight: "10px" }}>Group by:</span>
                       <ButtonGroup variant="outlined" aria-label="outlined button group">
                         <Button variant={mode === 'room' ? "contained" : "outlined"} onClick={() => setMode("room")}>Room</Button>
-                        <Button variant={mode === 'lecturer' ? "contained" : "outlined"} onClick={() => setMode("lecturer")}>Lecturer</Button>
-                        <Button variant={mode === 'table' ? "contained" : "outlined"} onClick={() => setMode("table")}>Table</Button>
+                        <Button variant={mode === 'instructor' ? "contained" : "outlined"} onClick={() => setMode("instructor")}>Lecturer</Button>
+                        <Button variant={mode === 'id' ? "contained" : "outlined"} onClick={() => setMode("id")}>Table</Button>
                       </ButtonGroup>
                     </Grid>
                     <Grid>
-                      <span style={{ marginRight: "10px" }}>Filter by:</span>
-                      <Box sx={{ minWidth: 120 }}>
+                      <span style={{
+                        marginRight: "10px",
+                      }}>Filter by:</span>
+                      <Box sx={{
+                        display: "inline-block",
+                        position: "relative",
+                        top: "-14px",
+                        minWidth: 200
+                      }}>
                         <FormControl fullWidth>
-                          <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                          <InputLabel id="demo-simple-select-label">{mode}</InputLabel>
                           <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
@@ -86,9 +93,9 @@ export const VisualizeResultPanel = (
                             label="Age"
                             onChange={handleChange}
                           >
-                            <MenuItem value={10}>Ten</MenuItem>
-                            <MenuItem value={20}>Twenty</MenuItem>
-                            <MenuItem value={30}>Thirty</MenuItem>
+                            {extractAvailableInstructors(timetable, mode).map(value => (
+                              <MenuItem value={value}>{value}</MenuItem>
+                            ))}
                           </Select>
                         </FormControl>
                       </Box>
@@ -102,12 +109,12 @@ export const VisualizeResultPanel = (
                       }}>{status}</div>
                     ))}
                   </div>
-                  {(mode === 'room' || mode === 'lecturer') && <TimetableView
-                    timetableProps={timetable as any}
+                  {(mode === 'room' || mode === 'instructor') && <TimetableView
+                    timetableProps={age ? filterTimetable(timetable, { field: mode, value: age }) : timetable as any}
                   />}
                   <SolutionTable
                     columns={Object.keys(timetable[0])}
-                    data={timetable}
+                    data={age ? filterTimetable(timetable, { field: mode, value: age }) : timetable}
                     setData={() => { }}
                     setViewData={() => setViewData}
                   />
@@ -119,4 +126,34 @@ export const VisualizeResultPanel = (
       </BKTab >
     </FlexCol >
   )
+}
+
+const extractAvailableInstructors = (timetable: TimetableCellProps[], field: "instructor" | "room" | "id"): string[] => {
+  if (field === "instructor")
+    return _.uniq(timetable.map(it => it.instructor));
+  else if (field === "room")
+    return _.uniq(timetable.map(it => it.room));
+  else (field === "id")
+  return _.uniq(timetable.map(it => it.id));
+}
+
+const filterTimetable = (timetable: TimetableCellProps[], criteria: {
+  field: "instructor" | "room" | "id",
+  value: string
+}): TimetableCellProps[] => {
+  return timetable.filter(it => it[criteria.field] === criteria.value)
+}
+
+
+interface TimetableCellProps {
+  id: string,
+  subject: string,
+  instructor: string,
+  room: string,
+  weekday: string,
+  period: string,
+  time: string,
+  entrants: number,
+  capableStudents: string[],
+  type: "not_available" | "origin" | "new" | "modified" | "new_modified";
 }
