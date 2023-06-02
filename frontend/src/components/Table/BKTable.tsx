@@ -72,7 +72,7 @@ export function BKTable(props: EditableTableProps) {
   return (
     <Table>
       <TableHead>
-        {props.name ?? <TableRow>
+        {props.name && <TableRow>
           <TableCell colSpan={props.columns.length + 1}>
             <h3>{props.name}</h3>
           </TableCell>

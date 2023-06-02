@@ -38,11 +38,6 @@ const Stepper = () => {
   // const [fetchResult, setFetchResult] = React.useState(null)
   const [openAlert, setOpenAlert] = useState(false)
   const [openInfo, setOpenInfo] = useState(false)
-  const [showPanel, setShowPanel] = useState(true)
-
-  const togglePanel = () => {
-    setShowPanel(isShow => !isShow)
-  }
 
   const [tables, setTables] = useState<{
     columns: string[],
@@ -77,11 +72,11 @@ const Stepper = () => {
             }
           </BKStepper>
         </Grid>
-        {showPanel &&
+        {/* {showPanel &&
           <Grid item xs={4}>
             <RightPanel togglePanel={togglePanel} />
-          </Grid>}
-        <Button
+          </Grid>} */}
+        {/* <Button
           style={{
             // position: 'absolute',
             // top: '100px',
@@ -102,7 +97,7 @@ const Stepper = () => {
           onClick={togglePanel}
         >
           {showPanel ? '>>' : '<<'}
-        </Button>
+        </Button> */}
       </Grid>
       <BKAlert
         severity="info"

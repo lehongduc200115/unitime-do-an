@@ -10,8 +10,12 @@ import {
   Typography,
   Link,
   Box,
+  Divider,
 } from "@mui/material";
-import { Edit, Check, Close, Undo } from "@mui/icons-material";
+import { Edit, Check, Close, Undo, ExpandMore } from "@mui/icons-material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+
 
 interface TimetableCellProps {
   id: string,
@@ -101,11 +105,13 @@ export function SolutionTable(props: EditableTableProps) {
         </TableRow> */}
         <TableRow>
           {headers.map((column) => (
-            <TableCell key={column}>
-              <Typography fontWeight="bold"> {column}</Typography>
+            <TableCell
+              key={column}
+              colSpan={column === "Students" ? 3 : 1}
+            >
+              <Typography fontWeight="bold">{column}</Typography>
             </TableCell>
           ))}
-          {/* <TableCell onClick={handleSaveAll}> save all </TableCell> */}
         </TableRow>
       </TableHead>
       <TableBody>
@@ -234,20 +240,31 @@ export function SolutionTable(props: EditableTableProps) {
                 {row["entrants"]?.toString()}
               </TableCell>
 
-              <TableCell key={"capableStudents"} onClick={() => setIsStudentExpaned(expanded => !expanded)}>
+              <TableCell key={"capableStudents"} >
                 {/* {row["capableStudents"]?.toString()} */}
 
                 {/* <EditableBox onClick={() => setIsStudentExpaned((cur) => !cur)}> */}
-                {!isStudentExpanded && `${row["capableStudents"]?.length} students`}
-                {/* </EditableBox> */}
-                {isStudentExpanded && <Typography>
-                  {row["capableStudents"]?.join(', ')}
-                </Typography>}
+                {!isStudentExpanded &&
+                  <div>
+                    {`${row["capableStudents"]?.length} students`}
+                    <ExpandMoreIcon style={{
+                      cursor: "pointer"
+                    }} onClick={() => setIsStudentExpaned(expanded => !expanded)}></ExpandMoreIcon>
+                  </div>
+                }
+                {isStudentExpanded &&
+                  <div>
+                    {row["capableStudents"]?.map(it =>
+                      <Typography>
+                        {it}
+                      </Typography>)}
+
+                    <ExpandLessIcon style={{
+                      cursor: "pointer"
+                    }} onClick={() => setIsStudentExpaned(expanded => !expanded)}></ExpandLessIcon>
+                  </div>}
               </TableCell>
-              {/* {props.columns.map((column) => (
-                <TableCell key={column}>{row[column]?.toString()}</TableCell>
-              ))} */}
-              <TableCell>
+              {/* <TableCell>
                 {
                   originalData[index] ? (
                     <IconButton onClick={() => handleUndo(index)}>
@@ -259,7 +276,7 @@ export function SolutionTable(props: EditableTableProps) {
                 <IconButton onClick={() => handleEdit(index)}>
                   <Edit />
                 </IconButton>
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           )
         )}

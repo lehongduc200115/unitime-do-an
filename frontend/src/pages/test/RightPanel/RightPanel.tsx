@@ -14,12 +14,26 @@ const TEST_DATA = {
   "capableStudents": ["1 - C.O.A.", "2 - C.O.B.", "6 - E.E.G.", "7 - E.E.H."],
   "type": "origin"
 }
-
-interface IRightPanelProps {
-  togglePanel: any
+interface IEngineOutputClass {
+  id: string;
+  subject: string;
+  instructor: string;
+  room: string;
+  weekday: string;
+  period: string;
+  time: string;
+  entrants: number;
+  capableStudents: string[];
+  type: "not_available" | "origin" | "new" | "modified" | "new_modified";
 }
 
-const RightPanel = ({ togglePanel }: IRightPanelProps) => {
+interface IRightPanelProps {
+  togglePanel?: any,
+  showPanel?: any,
+  data?: IEngineOutputClass
+}
+
+const RightPanel = ({ togglePanel, data, showPanel }: IRightPanelProps) => {
   // const [properties, setProperties] = useState({
   //   name: 'My Component',
   //   color: '#ffffff',
@@ -33,26 +47,25 @@ const RightPanel = ({ togglePanel }: IRightPanelProps) => {
   //   });
   // };
 
-  return (
-    <div
-      style={{
-        // position: 'fixed',
-        // top: 0,
-        // right: 0,
-        // right: expanded ? '10px' : '-400px',
-        height: '100vh',
-        // width: expanded ? "400px" : '10px',
-        width: "100%",
-        // paddingTop: "64px",
-        backgroundColor: '#f1f1f1',
-        boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)',
-        zIndex: 999, // ensure panel is above other elements
-        transition: 'right 0.3s', // Add transition effect
-      }}
-    >
-      <ScheduleDetail schedule={TEST_DATA
-      }></ScheduleDetail>
-    </div>
+  return (data ? <div
+    style={{
+      // position: 'fixed',
+      // top: 0,
+      // right: 0,
+      // right: expanded ? '10px' : '-400px',
+      height: '80vh',
+      // width: expanded ? "400px" : '10px',
+      width: "100%",
+      // position: "fixed",
+      // paddingTop: "64px",
+      backgroundColor: '#f1f1f1',
+      boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)',
+      zIndex: 999, // ensure panel is above other elements
+      transition: 'right 0.3s', // Add transition effect
+    }}
+  >
+    <ScheduleDetail schedule={data}></ScheduleDetail>
+  </div> : null
   );
 };
 

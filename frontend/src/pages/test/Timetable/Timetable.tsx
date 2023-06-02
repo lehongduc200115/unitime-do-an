@@ -39,6 +39,7 @@ interface TimetableCellProps {
   entrants: number,
   capableStudents: string[],
   type: "not_available" | "origin" | "new" | "modified" | "new_modified";
+  setSelected?: any
 }
 
 export const hue = {
@@ -54,9 +55,10 @@ export const hue = {
 interface TimetableRowProps {
   day: string;
   events: TimetableCellProps[];
+  setSelected?: any;
 }
 
-const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }: TimetableCellProps) => {
+const TimetableCell = ({ capableStudents, subject, instructor, type, entrants, setSelected, id }: TimetableCellProps) => {
   const color = hue[type]
 
   const [showCapableStudents, setShowCapableStudents] = useState(false);
@@ -67,9 +69,12 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
     //   backgroundColor: color,
     //   borderRadius: "5px"
     // }}>
-    <div>
+    <div onClick={() => {
+      console.log("clickedd");
+      setSelected(id);
+    }} style={{ cursor: "pointer" }}>
       {subject && (
-        <div className="timetable-subject">{subject}</div>
+        <div className="timetable-subject" >{subject}</div>
       )}
       {instructor && (
         <div className="timetable-instructor">{instructor}</div>
@@ -77,7 +82,7 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
       {entrants && (
         <div className="timetable-entrants">{entrants ? `Size: ${entrants}` : ""}</div>
       )}
-      {capableStudents && capableStudents.length > 0 && (
+      {/* {capableStudents && capableStudents.length > 0 && (
         <>
           <button onClick={() => setShowCapableStudents(!showCapableStudents)}>
             {showCapableStudents ? "Hide" : "Show"}
@@ -92,7 +97,7 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
             </div>
           )}
         </>
-      )}
+      )} */}
     </div>
     // </td>
   );
@@ -121,7 +126,7 @@ const TimetableCell = ({ capableStudents, subject, instructor, type, entrants }:
 //   );
 // };
 
-const TimetableRow = ({ day, events }: TimetableRowProps) => {
+const TimetableRow = ({ day, events, setSelected }: TimetableRowProps) => {
   const eventMap: { [time: string]: TimetableCellProps } = {};
 
   events.forEach(cell => {
@@ -182,6 +187,7 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
             <TimetableCell
               time={start}
               {...(eventMap[start] || {} as TimetableCellProps)}
+              setSelected={setSelected}
             />
           </td>
         );
@@ -190,8 +196,9 @@ const TimetableRow = ({ day, events }: TimetableRowProps) => {
   );
 };
 
-const TimetableView = (props: { timetableProps?: TimetableCellProps[] }) => {
+const TimetableView = (props: { timetableProps?: TimetableCellProps[], setSelected: any }) => {
   const { timetableProps } = props
+  const { setSelected } = props
   // const [currentTime, setCurrentTime] = useState(new Date());
   const [timetable, setTimetable] = useState<TimetableCellProps[]>([]);
   // const [parsedTimetable, setParsedTimetable] = useState(defaultTimetable);
@@ -239,7 +246,7 @@ const TimetableView = (props: { timetableProps?: TimetableCellProps[] }) => {
 
                 console.log(`day: ${JSON.stringify(day)}`)
                 return (
-                  <TimetableRow key={i} day={weekday} events={day} />
+                  <TimetableRow key={i} day={weekday} events={day} setSelected={setSelected} />
                 );
               })) : ""
           }

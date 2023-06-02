@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Typography, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import { TextField } from '@mui/material';
 import { Box } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 
 import './styles.css';
@@ -11,7 +13,7 @@ const ScheduleDetail = ({ schedule }: any) => {
   const [isStudentExpanded, setIsStudentExpaned] = useState(false);
 
   return (
-    <>
+    <div>
       <Typography variant="h6" gutterBottom style={{
         paddingTop: "1rem",
         paddingLeft: "1rem",
@@ -75,9 +77,33 @@ const ScheduleDetail = ({ schedule }: any) => {
             <TableRow>
               <TableCell className='table-header'>Capable Students</TableCell>
               <TableCell className='table-cell'>
-                <EditableBox onClick={() => setIsStudentExpaned((cur) => !cur)}>
+                {/* <EditableBox onClick={() => setIsStudentExpaned((cur) => !cur)}>
                   {!isStudentExpanded ? `${capableStudents.length} students` : capableStudents.join(', ')}
-                </EditableBox>
+                </EditableBox> */}
+                <div
+                  style={{
+                    padding: "8px !important"
+                  }}>
+                  {!isStudentExpanded &&
+                    <div>
+                      {`${capableStudents?.length} students`}
+                      <ExpandMoreIcon style={{
+                        cursor: "pointer"
+                      }} onClick={() => setIsStudentExpaned(expanded => !expanded)}></ExpandMoreIcon>
+                    </div>
+                  }
+                  {isStudentExpanded &&
+                    <div>
+                      {capableStudents?.map((it: any) =>
+                        <p>
+                          {it}
+                        </p>)}
+
+                      <ExpandLessIcon style={{
+                        cursor: "pointer"
+                      }} onClick={() => setIsStudentExpaned(expanded => !expanded)}></ExpandLessIcon>
+                    </div>}
+                </div>
               </TableCell>
             </TableRow>
             <TableRow>
@@ -89,7 +115,7 @@ const ScheduleDetail = ({ schedule }: any) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </div>
   );
 };
 
