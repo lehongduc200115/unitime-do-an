@@ -710,7 +710,7 @@ const scaleupClassEvaluate = ({
   penalty: number;
   newClassI: number;
   oldClassI: number; // Picked classI
-  newRoomI: number;
+  newRoomI?: number;
   newRoomI_2: number;
   newWeekday?: number;
   newStartPeriodI?: number;
@@ -737,6 +737,10 @@ const scaleupClassEvaluate = ({
 
     if (engineInput.rooms[oldRoomI].capacity < newClassEntrants) {
       // If old class's room is not capacity satisfied
+      if (!newRoomI) {
+        score = 0;
+        break;
+      }
       // -- Specified new room satisfied?
       // Type check
       if (
@@ -823,7 +827,7 @@ const scaleupClassEvaluate = ({
         engineInput.timetable[oldClassI].startPeriod +
         1,
       subjectI: engineInput.newClasses[newClassI].subjectI,
-      roomI: oldIsFit ? engineInput.timetable[oldClassI].roomI : newRoomI,
+      roomI: oldIsFit ? engineInput.timetable[oldClassI].roomI : newRoomI!,
     });
     // TODO: check if student count meets minimum requirement
     if (
@@ -869,12 +873,12 @@ const scaleupClassEvaluate = ({
           new Array(engineInput.periods.length);
         extendedInput.rooms[newRoomI_2][weekday][periodI] = oldClassI_2;
         // Remove old room from extended input
-        extendedInput.rooms[newRoomI] =
-          extendedInput.rooms[newRoomI] || new Array(7);
-        extendedInput.rooms[newRoomI][weekday] =
-          extendedInput.rooms[newRoomI][weekday] ||
+        extendedInput.rooms[newRoomI!] =
+          extendedInput.rooms[newRoomI!] || new Array(7);
+        extendedInput.rooms[newRoomI!][weekday] =
+          extendedInput.rooms[newRoomI!][weekday] ||
           new Array(engineInput.periods.length);
-        extendedInput.rooms[newRoomI][weekday][periodI] = -1;
+        extendedInput.rooms[newRoomI!][weekday][periodI] = -1;
       }
       // Nudge score
       score = score - penalty;
@@ -890,10 +894,10 @@ const scaleupClassEvaluate = ({
       });
       if (modClassI < 0) {
         let modClass = _.cloneDeep(engineInput.timetable[oldClassI]);
-        modClass.roomI = newRoomI;
+        modClass.roomI = newRoomI!;
         modifiedClasses.push(modClass);
       } else {
-        modifiedClasses[modClassI].roomI = newRoomI;
+        modifiedClasses[modClassI].roomI = newRoomI!;
       }
       // Update room
       const weekday = engineInput.timetable[oldClassI].weekday;
@@ -901,12 +905,12 @@ const scaleupClassEvaluate = ({
       const endPeriod = engineInput.timetable[oldClassI].endPeriod;
       for (let periodI = startPeriod; periodI <= endPeriod; ++periodI) {
         // Add shifted room to extended input
-        extendedInput.rooms[newRoomI] =
-          extendedInput.rooms[newRoomI] || new Array(7);
-        extendedInput.rooms[newRoomI][weekday] =
-          extendedInput.rooms[newRoomI][weekday] ||
+        extendedInput.rooms[newRoomI!] =
+          extendedInput.rooms[newRoomI!] || new Array(7);
+        extendedInput.rooms[newRoomI!][weekday] =
+          extendedInput.rooms[newRoomI!][weekday] ||
           new Array(engineInput.periods.length);
-        extendedInput.rooms[newRoomI][weekday][periodI] = oldClassI;
+        extendedInput.rooms[newRoomI!][weekday][periodI] = oldClassI;
         // Remove old room from extended input
         extendedInput.rooms[oldRoomI] =
           extendedInput.rooms[oldRoomI] || new Array(7);
@@ -993,7 +997,9 @@ class EngineOutput {
             penalty: penalty,
             newClassI: newClassI,
             oldClassI: oldClassI,
-            newRoomI: newRoomI,
+            newRoomI: engineInput.newClasses[newClassI].unrestricted
+              ? newRoomI
+              : undefined,
             newRoomI_2: extraGene % engineInput.rooms.length,
             newWeekday:
               extraGene %
@@ -1264,11 +1270,10 @@ const fitness = (entity: Entity) => {
         penalty: penalty,
         newClassI: newClassI,
         oldClassI: oldClassI,
-        newRoomI: newRoomI,
+        newRoomI: engineInput.newClasses[newClassI].unrestricted
+          ? newRoomI
+          : undefined,
         newRoomI_2: extraGene % engineInput.rooms.length,
-        newWeekday:
-          extraGene % engineInput.newClasses[newClassI].preferedWeekday.length,
-        newStartPeriodI: Math.floor(extraGene / 7),
         extendedInput: extendedInput,
         modifiedClasses: modifiedClasses,
       });
