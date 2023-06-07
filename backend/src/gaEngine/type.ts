@@ -109,5 +109,5 @@ export interface IEngineOutputClass {
     time: string,
     entrants: number,
     capableStudents: string[],
-    type: "not_available" | "origin" | "new" | "modified" | "new_modified";
+    type: "not_available" | "unscalable" | "origin" | "new" | "modified" | "scaleup" | "scaleup_modified";
 }
