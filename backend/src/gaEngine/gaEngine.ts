@@ -1381,6 +1381,15 @@ export const engine = (input: any) => {
     };
     bestRes.push(engine.run(dump)[0]);
   }
+  // Ordering by descending score
+  bestRes = bestRes.sort((first, second) => {
+    if (first.fitness > second.fitness) {
+      return -1;
+    } else if (first.fitness < second.fitness) {
+      return 1;
+    }
+    return 0;
+  });
   console.log("-- Done!");
 
   // Parse engine result to readable result
